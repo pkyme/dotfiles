@@ -125,3 +125,6 @@ endfunction
 autocmd BufNewfile *.{c,cpp,h} call <SID>InsertCppTemplate()
 autocmd BufNewfile *.h call <SID>InsertHeaderTemplate()
 
+" Override defaults for a.vim
+let g:alternateExtensions_h = "cpp,c,cxx,cc,CC"
+let g:alternateRelativeFiles = 1
