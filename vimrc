@@ -27,8 +27,8 @@ set showcmd
 set showmatch
 filetype plugin indent on
 syntax on
-set autowrite
-" set hidden
+" set autowrite
+set hidden
 set nocompatible
 set undofile
 set undodir=/tmp
@@ -102,3 +102,26 @@ let g:miniBufExplMaxSize = 40
 
 " Faster Esc
 inoremap jk <esc>
+
+function! s:InsertCppTemplate()
+    silent! 0r ~/.vim/templates/c_template
+    let filename = expand("%t")
+    exec "%s/<filename>/" . filename . "/"
+    let date = strftime( "%h %e, %Y" )
+    exec "%s/<date>/" . date . "/"
+    let project = eclim#project#util#GetCurrentProjectName()
+    exec "%s/<project>/" . project . "/"
+    normal! G
+endfunction
+
+function! s:InsertHeaderTemplate()
+    let gatename = substitute(toupper(expand("%:t")), "\\.", "_", "g")
+    execute "normal! i#ifndef " . gatename
+    execute "normal! o#define " . gatename
+    execute "normal! 3o"
+    execute "normal! o#endif /* " . gatename . " */"
+    execute "normal! 2k"
+endfunction
+autocmd BufNewfile *.{c,cpp,h} call <SID>InsertCppTemplate()
+autocmd BufNewfile *.h call <SID>InsertHeaderTemplate()
+
