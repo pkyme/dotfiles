@@ -105,7 +105,7 @@ inoremap jk <esc>
 
 function! s:InsertCppTemplate()
     silent! 0r ~/.vim/templates/c_template
-    let filename = expand("%t")
+    let filename = expand("%:t")
     exec "%s/<filename>/" . filename . "/"
     let date = strftime( "%h %e, %Y" )
     exec "%s/<date>/" . date . "/"
