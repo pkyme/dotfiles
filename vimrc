@@ -88,10 +88,6 @@ nmap <c-l> <c-w>l
 nmap <c-h> <c-w>h
 set wmh=0
 
-" Switch between .h/.cpp
-nmap <silent> <F1> :A<CR>
-
-
 " Minibuffer explorer settings
 let g:miniBufExplMapWindowNavVim = 1
 let g:miniBufExplMapWindowNavArrows = 1
@@ -103,6 +99,7 @@ let g:miniBufExplMaxSize = 40
 " Faster Esc
 inoremap jk <esc>
 
+" Autocmd templates for headers/cpp files
 function! s:InsertCppTemplate()
     silent! 0r ~/.vim/templates/c_template
     let filename = expand("%:t")
@@ -128,3 +125,7 @@ autocmd BufNewfile *.h call <SID>InsertHeaderTemplate()
 " Override defaults for a.vim
 let g:alternateExtensions_h = "cpp,c,cxx,cc,CC"
 let g:alternateRelativeFiles = 1
+nmap <silent> <F1> :A<CR>
+
+" Strip trailing whitespace on save
+autocmd BufWritePre *.{c,cpp,h} :%s/\s\+$//e
