@@ -119,6 +119,7 @@ function! s:InsertHeaderTemplate()
     execute "normal! o#endif /* " . gatename . " */"
     execute "normal! 2k"
 endfunction
+
 autocmd BufNewfile *.{c,cpp,h} call <SID>InsertCppTemplate()
 autocmd BufNewfile *.h call <SID>InsertHeaderTemplate()
 
