@@ -75,11 +75,13 @@ endfunction
 map <silent> ,/ :call Comment()<CR>
 
 " Eclim settings
-let g:EclimLocateFileDefaultAction="edit"
-let g:EclimCSearchSingleResult = 'edit'
-nmap <silent> <F2> :LocateFile<CR>
-set statusline=%<%f\ %M\ %h%r%=%-10.(%l,%c%V\ %{eclim#project#util#ProjectStatusLine()}%)\ %P
-let g:EclimProjectStatusLine = 'eclim(p=${name})'
+if exists( "*eclim#project#util#ProjectStatusLine()" )
+    let g:EclimLocateFileDefaultAction="edit"
+    let g:EclimCSearchSingleResult = 'edit'
+    nmap <silent> <F2> :LocateFile<CR>
+    set statusline=%<%f\ %M\ %h%r%=%-10.(%l,%c%V\ %{eclim#project#util#ProjectStatusLine()}%)\ %P
+    let g:EclimProjectStatusLine = 'eclim(p=${name})'
+endif
 
 " Window navigating shortcuts
 nmap <c-j> <c-w>j
