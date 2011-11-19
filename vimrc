@@ -75,11 +75,13 @@ endfunction
 map <silent> ,/ :call Comment()<CR>
 
 " Eclim settings
-let g:EclimLocateFileDefaultAction="edit"
-let g:EclimCSearchSingleResult = 'edit'
-nmap <silent> <F2> :LocateFile<CR>
-set statusline=%<%f\ %M\ %h%r%=%-10.(%l,%c%V\ %{eclim#project#util#ProjectStatusLine()}%)\ %P
-let g:EclimProjectStatusLine = 'eclim(p=${name})'
+if exists( "*eclim#project#util#ProjectStatusLine()" )
+    let g:EclimLocateFileDefaultAction="edit"
+    let g:EclimCSearchSingleResult = 'edit'
+    nmap <silent> <F2> :LocateFile<CR>
+    set statusline=%<%f\ %M\ %h%r%=%-10.(%l,%c%V\ %{eclim#project#util#ProjectStatusLine()}%)\ %P
+    let g:EclimProjectStatusLine = 'eclim(p=${name})'
+endif
 
 " Window navigating shortcuts
 nmap <c-j> <c-w>j
@@ -106,8 +108,10 @@ function! s:InsertCppTemplate()
     exec "%s/<filename>/" . filename . "/"
     let date = strftime( "%h %e, %Y" )
     exec "%s/<date>/" . date . "/"
-    let project = eclim#project#util#GetCurrentProjectName()
-    exec "%s/<project>/" . project . "/"
+    if exists( "*eclim#project#util#GetCurrentProjectName()" )
+        let project = eclim#project#util#GetCurrentProjectName()
+        exec "%s/<project>/" . project . "/"
+    endif
     normal! G
 endfunction
 
