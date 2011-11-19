@@ -106,8 +106,10 @@ function! s:InsertCppTemplate()
     exec "%s/<filename>/" . filename . "/"
     let date = strftime( "%h %e, %Y" )
     exec "%s/<date>/" . date . "/"
-    let project = eclim#project#util#GetCurrentProjectName()
-    exec "%s/<project>/" . project . "/"
+    if exists( "*eclim#project#util#GetCurrentProjectName()" )
+        let project = eclim#project#util#GetCurrentProjectName()
+        exec "%s/<project>/" . project . "/"
+    endif
     normal! G
 endfunction
 
