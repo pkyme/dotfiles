@@ -25,6 +25,7 @@ set history=50
 set ruler
 set showcmd
 set showmatch
+set laststatus=2
 filetype plugin indent on
 syntax on
 " set autowrite
@@ -75,13 +76,19 @@ endfunction
 map <silent> ,/ :call Comment()<CR>
 
 " Eclim settings
-if exists( "*eclim#project#util#ProjectStatusLine()" )
-    let g:EclimLocateFileDefaultAction="edit"
-    let g:EclimCSearchSingleResult = 'edit'
-    nmap <silent> <F2> :LocateFile<CR>
-    set statusline=%<%f\ %M\ %h%r%=%-10.(%l,%c%V\ %{eclim#project#util#ProjectStatusLine()}%)\ %P
-    let g:EclimProjectStatusLine = 'eclim(p=${name})'
-endif
+function! GetCurrentProjectNameSafe()
+    let project = ""
+    if exists( ":EclimValidate" )
+        let project = eclim#project#util#GetCurrentProjectName()
+    endif
+    return project
+endfunction
+
+let g:EclimLocateFileDefaultAction="edit"
+let g:EclimCSearchSingleResult = 'edit'
+nmap <silent> <F2> :LocateFile<CR>
+set statusline=%<%f\ %M\ %h%r%=%-10.(%l,%c%V\ %{GetCurrentProjectNameSafe()}%)\ %P
+ let g:EclimProjectStatusLine = 'eclim(p=${name})'
 
 " Window navigating shortcuts
 nmap <c-j> <c-w>j
@@ -108,10 +115,8 @@ function! s:InsertCppTemplate()
     exec "%s/<filename>/" . filename . "/"
     let date = strftime( "%h %e, %Y" )
     exec "%s/<date>/" . date . "/"
-    if exists( "*eclim#project#util#GetCurrentProjectName()" )
-        let project = eclim#project#util#GetCurrentProjectName()
-        exec "%s/<project>/" . project . "/"
-    endif
+    let project = GetCurrentProjectNameSafe()
+    exec "%s/<project>/" . project . "/"
     normal! G
 endfunction
 
