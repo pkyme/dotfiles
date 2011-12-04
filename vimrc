@@ -2,7 +2,11 @@
 call pathogen#infect()
 
 colorscheme freya
-set guifont=Monospace\ 12
+if has("gui_macvim")
+    set guifont=Menlo\ Regular:h14
+else
+    set guifont=Monospace\ 12
+endif
 set guioptions-=T
 set guioptions-=m
 set guioptions+=LlRrb
