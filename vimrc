@@ -39,6 +39,9 @@ set backspace=indent,eol,start
 nnoremap j gj
 nnoremap k gk
 
+" Performance fix for miniBufExpl with lots of buffers
+let g:miniBufExplCheckDupeBufs = 0
+
 " Complete options (disable preview scratch window)
 set completeopt=menu,menuone,longest
 " Limit popup menu height
@@ -88,7 +91,6 @@ let g:EclimLocateFileDefaultAction="edit"
 let g:EclimCSearchSingleResult = 'edit'
 nmap <silent> <F2> :LocateFile<CR>
 set statusline=%<%f\ %M\ %h%r%=%-10.(%l,%c%V\ %{GetCurrentProjectNameSafe()}%)\ %P
- let g:EclimProjectStatusLine = 'eclim(p=${name})'
 
 " Window navigating shortcuts
 nmap <c-j> <c-w>j
