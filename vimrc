@@ -144,4 +144,4 @@ let g:alternateRelativeFiles = 1
 nmap <silent> <F1> :A<CR>
 
 " Strip trailing whitespace on save
-autocmd BufWritePre *.{c,cpp,h} :%s/\s\+$//e
+" autocmd BufWritePre *.{c,cpp,h} :%s/\s\+$//e
