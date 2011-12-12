@@ -42,6 +42,7 @@ let mapleader = ","
 set backspace=indent,eol,start
 nnoremap j gj
 nnoremap k gk
+nnoremap Y y$
 
 " Performance fix for miniBufExpl with lots of buffers
 let g:miniBufExplCheckDupeBufs = 0
