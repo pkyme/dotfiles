@@ -146,6 +146,9 @@ install_custom_nodes() {
         "https://github.com/city96/ComfyUI-GGUF"
         "https://github.com/yolain/ComfyUI-Easy-Use"
         "https://github.com/StableLlama/ComfyUI-basic_data_handling"
+        "https://github.com/munkyfoot/ComfyUI-TextOverlay.git"
+        "https://github.com/Nourepide/ComfyUI-Allor.git"
+        "https://github.com/kijai/ComfyUI-segment-anything-2.git"
     )
     
     for repo_url in "${custom_node_urls[@]}"; do
