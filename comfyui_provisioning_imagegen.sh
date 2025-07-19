@@ -3,8 +3,6 @@
 # ComfyUI Provisioning Script for vast.ai
 # This script automatically sets up ComfyUI with custom nodes and models
 
-set -e  # Exit on any error
-
 # Configuration
 COMFYUI_DIR="ComfyUI"
 LISTEN_HOST="0.0.0.0"  # Changed from localhost for vast.ai accessibility
@@ -191,6 +189,13 @@ start_comfyui() {
 # Main execution function
 main() {
     log_info "Starting ComfyUI provisioning script..."
+
+    cd /workspace/
+    # Cause the script to exit on failure.
+    set -eo pipefail
+
+    # Activate the main virtual environment
+    . /venv/main/bin/activate
     
     install_comfyui_core
     install_custom_nodes
