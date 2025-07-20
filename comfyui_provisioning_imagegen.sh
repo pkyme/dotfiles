@@ -149,7 +149,8 @@ install_custom_nodes() {
         "https://github.com/munkyfoot/ComfyUI-TextOverlay.git"
         "https://github.com/Nourepide/ComfyUI-Allor.git"
         "https://github.com/kijai/ComfyUI-segment-anything-2.git"
-        "https://github.com/Shakker-Labs/ComfyUI-IPAdapter-Flux.git"
+        # "https://github.com/Shakker-Labs/ComfyUI-IPAdapter-Flux.git"
+        "https://github.com/cubiq/ComfyUI_IPAdapter_plus.git"
     )
     
     for repo_url in "${custom_node_urls[@]}"; do
@@ -172,8 +173,10 @@ download_models() {
         ["https://huggingface.co/StableDiffusionVN/Flux/resolve/main/Vae/flux_vae.safetensors"]="vae"
         ["https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q8_0.gguf"]="text_encoders"
         ["https://huggingface.co/Comfy-Org/stable-diffusion-3.5-fp8/resolve/main/text_encoders/clip_l.safetensors"]="text_encoders"
-        ["https://huggingface.co/InstantX/FLUX.1-dev-IP-Adapter/resolve/main/ip-adapter.bin"]="ipadapter-flux"
-        ["https://huggingface.co/google/siglip-so400m-patch14-384/resolve/main/model.safetensors"]="clip_vision"
+        # ["https://huggingface.co/InstantX/FLUX.1-dev-IP-Adapter/resolve/main/ip-adapter.bin"]="ipadapter-flux"
+        ["https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors"]="ipadapter"
+        # ["https://huggingface.co/google/siglip-so400m-patch14-384/resolve/main/model.safetensors"]="clip_vision"
+        ["https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/image_encoder/model.safetensors"]="clip_vision"
     )
     
     for url in "${!model_downloads[@]}"; do
