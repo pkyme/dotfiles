@@ -48,20 +48,10 @@ install_hf_cli() {
     fi
 }
 
-# Function to setup Hugging Face authentication
-setup_hf_auth() {
+# Function to check for HF token
+check_hf_token() {
     if [ -n "${HF_TOKEN:-}" ]; then
-        log_info "Setting up Hugging Face authentication..."
-        
-        # Login using the token
-        echo "$HF_TOKEN" | huggingface-cli login --token -
-        
-        if [ $? -eq 0 ]; then
-            log_success "Hugging Face authentication successful"
-        else
-            log_error "Hugging Face authentication failed"
-            return 1
-        fi
+        log_info "HF_TOKEN found - will use for authenticated downloads"
     else
         log_warning "No HF_TOKEN environment variable found. Downloads will be limited to public models only."
         log_info "To access private/gated models, set HF_TOKEN environment variable with your Hugging Face token"
@@ -139,6 +129,7 @@ download_model_hf() {
     local filename
     local output_dir
     local url_subfolder
+    local download_cmd
     
     # Parse the HuggingFace URL
     parsed_info=$(parse_hf_url "$hf_url")
@@ -162,10 +153,22 @@ download_model_hf() {
         return 0
     fi
     
+    # Build the base download command
+    download_cmd="huggingface-cli download \"$repo_id\""
+    
+    # Add token if available
+    if [ -n "${HF_TOKEN:-}" ]; then
+        download_cmd="$download_cmd --token \"$HF_TOKEN\""
+    fi
+    
+    # Add common parameters
+    download_cmd="$download_cmd --local-dir \"$output_dir\" --local-dir-use-symlinks False"
+    
     # Download the file using HF CLI
     if [ -n "$url_subfolder" ]; then
         # Download file with subfolder
-        if huggingface-cli download "$repo_id" "$url_subfolder/$filename" --local-dir "$output_dir" --local-dir-use-symlinks False; then
+        download_cmd="$download_cmd \"$url_subfolder/$filename\""
+        if eval "$download_cmd"; then
             # Move file from subfolder to main directory to maintain expected structure
             if [ -f "$output_dir/$url_subfolder/$filename" ]; then
                 mv "$output_dir/$url_subfolder/$filename" "$output_dir/$filename"
@@ -178,7 +181,8 @@ download_model_hf() {
         fi
     else
         # Download file directly
-        if huggingface-cli download "$repo_id" "$filename" --local-dir "$output_dir" --local-dir-use-symlinks False; then
+        download_cmd="$download_cmd \"$filename\""
+        if eval "$download_cmd"; then
             log_success "Downloaded $filename"
         else
             log_error "Failed to download $filename"
@@ -235,9 +239,9 @@ install_custom_nodes() {
 download_models() {
     log_info "Downloading models..."
     
-    # Install HF CLI and setup authentication
+    # Install HF CLI and check for token
     install_hf_cli
-    setup_hf_auth
+    check_hf_token
     
     # Define models to download (huggingface_url:model_type pairs)
     declare -A model_downloads=(
@@ -252,7 +256,6 @@ download_models() {
         # ["https://huggingface.co/google/siglip-so400m-patch14-384/resolve/main/model.safetensors"]="clip_vision"
         # ["https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors"]="ipadapter"
         # ["https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/image_encoder/model.safetensors"]="clip_vision"
-        ["https://huggingface.co/QuantStack/FLUX.1-Kontext-dev-GGUF/resolve/main/flux1-kontext-dev-Q8_0.gguf"]="unet"
     )
     
     for url in "${!model_downloads[@]}"; do
