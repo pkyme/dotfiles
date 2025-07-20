@@ -2,6 +2,11 @@
 
 # ComfyUI Provisioning Script for vast.ai
 # This script automatically sets up ComfyUI with custom nodes and models
+# 
+# Environment Variables:
+#   HF_TOKEN - Hugging Face token for authentication (optional but recommended)
+#            - Get your token from: https://huggingface.co/settings/tokens
+#            - Usage: export HF_TOKEN="your_token_here" && ./script.sh
 
 # Configuration
 COMFYUI_DIR="ComfyUI"
@@ -30,6 +35,37 @@ log_warning() {
 
 log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Function to install Hugging Face CLI if not present
+install_hf_cli() {
+    if ! command -v huggingface-hub &> /dev/null; then
+        log_info "Installing Hugging Face CLI..."
+        pip install huggingface-hub[cli]
+        log_success "Hugging Face CLI installed"
+    else
+        log_info "Hugging Face CLI already installed"
+    fi
+}
+
+# Function to setup Hugging Face authentication
+setup_hf_auth() {
+    if [ -n "${HF_TOKEN:-}" ]; then
+        log_info "Setting up Hugging Face authentication..."
+        
+        # Login using the token
+        echo "$HF_TOKEN" | huggingface-cli login --token -
+        
+        if [ $? -eq 0 ]; then
+            log_success "Hugging Face authentication successful"
+        else
+            log_error "Hugging Face authentication failed"
+            return 1
+        fi
+    else
+        log_warning "No HF_TOKEN environment variable found. Downloads will be limited to public models only."
+        log_info "To access private/gated models, set HF_TOKEN environment variable with your Hugging Face token"
+    fi
 }
 
 # Function to extract node name from GitHub URL
@@ -66,7 +102,22 @@ install_custom_node() {
     fi
 }
 
-# Function to extract model path from HuggingFace URL
+# Function to parse Hugging Face URL and extract repo info
+parse_hf_url() {
+    local url="$1"
+    local repo_id
+    local filename
+    
+    # Extract repo_id (format: username/repo-name)
+    repo_id=$(echo "$url" | sed -n 's|.*huggingface\.co/\([^/]*/[^/]*\).*|\1|p')
+    
+    # Extract filename from the end of the URL
+    filename=$(echo "$url" | sed -n 's|.*/\([^/]*\)$|\1|p')
+    
+    echo "$repo_id:$filename"
+}
+
+# Function to extract model path from HuggingFace URL (preserving original structure)
 get_model_output_path() {
     local model_type="$1"
     local hf_url="$2"
@@ -78,25 +129,29 @@ get_model_output_path() {
     echo "models/$model_type/$path_component"
 }
 
-# Function to extract filename from URL
-get_filename_from_url() {
-    local url="$1"
-    echo "${url##*/}"
-}
-
-# Function to download a model file using HuggingFace URL
+# Function to download a model file using HuggingFace CLI
 download_model_hf() {
     local model_type="$1"
     local hf_url="$2"
     
-    local output_dir
+    local parsed_info
+    local repo_id
     local filename
+    local output_dir
+    local url_subfolder
     
-    # Automatically determine output directory and filename
+    # Parse the HuggingFace URL
+    parsed_info=$(parse_hf_url "$hf_url")
+    repo_id=$(echo "$parsed_info" | cut -d':' -f1)
+    filename=$(echo "$parsed_info" | cut -d':' -f2)
+    
+    # Get output directory preserving the original HF path structure
     output_dir=$(get_model_output_path "$model_type" "$hf_url")
-    filename=$(get_filename_from_url "$hf_url")
     
-    log_info "Downloading $model_type model: $filename to $output_dir/"
+    # Extract subfolder from URL if present (path after resolve/main/ or resolve/branch/)
+    url_subfolder=$(echo "$hf_url" | sed -n 's|.*resolve/[^/]*/\(.*\)/[^/]*$|\1|p')
+    
+    log_info "Downloading $model_type model: $filename from $repo_id to $output_dir/"
     
     # Create directory if it doesn't exist
     mkdir -p "$output_dir"
@@ -107,12 +162,28 @@ download_model_hf() {
         return 0
     fi
     
-    # Download the file
-    if curl -L -o "$output_dir/$filename" "$hf_url"; then
-        log_success "Downloaded $filename"
+    # Download the file using HF CLI
+    if [ -n "$url_subfolder" ]; then
+        # Download file with subfolder
+        if huggingface-cli download "$repo_id" "$url_subfolder/$filename" --local-dir "$output_dir" --local-dir-use-symlinks False; then
+            # Move file from subfolder to main directory to maintain expected structure
+            if [ -f "$output_dir/$url_subfolder/$filename" ]; then
+                mv "$output_dir/$url_subfolder/$filename" "$output_dir/$filename"
+                rmdir "$output_dir/$url_subfolder" 2>/dev/null || true
+            fi
+            log_success "Downloaded $filename"
+        else
+            log_error "Failed to download $filename"
+            return 1
+        fi
     else
-        log_error "Failed to download $filename"
-        return 1
+        # Download file directly
+        if huggingface-cli download "$repo_id" "$filename" --local-dir "$output_dir" --local-dir-use-symlinks False; then
+            log_success "Downloaded $filename"
+        else
+            log_error "Failed to download $filename"
+            return 1
+        fi
     fi
 }
 
@@ -150,7 +221,7 @@ install_custom_nodes() {
         "https://github.com/Nourepide/ComfyUI-Allor.git"
         "https://github.com/kijai/ComfyUI-segment-anything-2.git"
         # "https://github.com/Shakker-Labs/ComfyUI-IPAdapter-Flux.git"
-        "https://github.com/cubiq/ComfyUI_IPAdapter_plus.git"
+        # "https://github.com/cubiq/ComfyUI_IPAdapter_plus.git"
     )
     
     for repo_url in "${custom_node_urls[@]}"; do
@@ -164,6 +235,10 @@ install_custom_nodes() {
 download_models() {
     log_info "Downloading models..."
     
+    # Install HF CLI and setup authentication
+    install_hf_cli
+    setup_hf_auth
+    
     # Define models to download (huggingface_url:model_type pairs)
     declare -A model_downloads=(
         ["https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors"]="checkpoints"
@@ -174,9 +249,9 @@ download_models() {
         ["https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q8_0.gguf"]="text_encoders"
         ["https://huggingface.co/Comfy-Org/stable-diffusion-3.5-fp8/resolve/main/text_encoders/clip_l.safetensors"]="text_encoders"
         # ["https://huggingface.co/InstantX/FLUX.1-dev-IP-Adapter/resolve/main/ip-adapter.bin"]="ipadapter-flux"
-        ["https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors"]="ipadapter"
         # ["https://huggingface.co/google/siglip-so400m-patch14-384/resolve/main/model.safetensors"]="clip_vision"
-        ["https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/image_encoder/model.safetensors"]="clip_vision"
+        # ["https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors"]="ipadapter"
+        # ["https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/image_encoder/model.safetensors"]="clip_vision"
     )
     
     for url in "${!model_downloads[@]}"; do
@@ -192,8 +267,6 @@ start_comfyui() {
     log_info "Starting ComfyUI on $LISTEN_HOST:$LISTEN_PORT"
     python main.py --listen "$LISTEN_HOST" --port "$LISTEN_PORT"
 }
-
-
 
 # Main execution function
 main() {
