@@ -147,7 +147,7 @@ download_model_hf() {
     fi
     
     # Build the base download command
-    download_cmd="huggingface-cli download \"$repo_id\""
+    download_cmd="hf download \"$repo_id\""
     
     # Add token if available
     if [ -n "${HF_TOKEN:-}" ]; then
