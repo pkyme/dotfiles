@@ -346,8 +346,8 @@ install_sage_attention() {
             git clone https://github.com/thu-ml/SageAttention.git
             cd SageAttention 
             export EXT_PARALLEL=4 NVCC_APPEND_FLAGS="--threads 8" MAX_JOBS=32 # parallel compiling (Optional)
-            # python setup.py install  # or pip install -e .
-            pip install -e .
+            python setup.py install  # or pip install -e .
+            # pip install -e .
             cd ..
             log_success "SageAttention library installed"
         else
@@ -482,7 +482,7 @@ main() {
     init_download_variables
 
     # # Activate the main virtual environment
-    # . /venv/main/bin/activate
+    . /venv/main/bin/activate
     
     # Install performance enhancements first (PyTorch nightly should be installed before other dependencies)
     install_pytorch_nightly
