@@ -85,10 +85,10 @@ define_models_CONTROLNET_EXTRAS() {
 
 define_models_IPADAPTER() {
     MODELS=(
-        "https://huggingface.co/InstantX/FLUX.1-dev-IP-Adapter/resolve/main/ip-adapter.bin:ipadapter-flux"
-        "https://huggingface.co/google/siglip-so400m-patch14-384/resolve/main/model.safetensors:clip_vision"
-        "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors:ipadapter"
-        "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/image_encoder/model.safetensors:clip_vision"
+        # "https://huggingface.co/InstantX/FLUX.1-dev-IP-Adapter/resolve/main/ip-adapter.bin:ipadapter-flux"
+        # "https://huggingface.co/google/siglip-so400m-patch14-384/resolve/main/model.safetensors:clip_vision"
+        # "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors:ipadapter"
+        # "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/image_encoder/model.safetensors:clip_vision"
     )
 }
 
@@ -264,7 +264,7 @@ download_model_hf() {
         log_error "download_model_hf called with empty parameters: model_type='$model_type', hf_url='$hf_url'"
         return 1
     fi
-
+    
     # Parse the HuggingFace URL
     parsed_info=$(parse_hf_url "$hf_url")
     repo_id=$(echo "$parsed_info" | cut -d':' -f1)
@@ -357,10 +357,8 @@ install_sage_attention() {
         
         if [ ! -d "SageAttention" ]; then
             git clone https://github.com/thu-ml/SageAttention.git
-            cd SageAttention 
-            export EXT_PARALLEL=4 NVCC_APPEND_FLAGS="--threads 8" MAX_JOBS=32 # parallel compiling (Optional)
-            python setup.py install  # or pip install -e .
-            # pip install -e .
+            cd SageAttention/
+            pip install -e .
             cd ..
             log_success "SageAttention library installed"
         else
@@ -430,9 +428,21 @@ download_model_group() {
             # Download each model in the group
             for url_type in "${MODELS[@]}"; do
                 if [ -n "$url_type" ]; then  # Skip empty entries
-                    local url="${url_type%:*}"
-                    local model_type="${url_type#*:}"
-                    download_model_hf "$model_type" "$url"
+                    # Test the extraction
+                    local test_url="${url_type%:*}"
+                    local test_type="${url_type#*:}"
+                    
+                    log_info "Processing: $url_type"
+                    log_info "  -> URL: $test_url"
+                    log_info "  -> Type: $test_type"
+                    
+                    # Skip if URL and model_type are the same (no colon found)
+                    if [ "$test_url" = "$test_type" ]; then
+                        log_error "Invalid model entry format: $url_type (expected format: url:type)"
+                        continue
+                    fi
+                    
+                    download_model_hf "$test_type" "$test_url"
                 fi
             done
             
@@ -494,14 +504,14 @@ main() {
     # Initialize download variables from MODEL_GROUPS configuration
     init_download_variables
 
-    # # Activate the main virtual environment
+    # Activate the main virtual environment
     . /venv/main/bin/activate
     
     # Install performance enhancements first (PyTorch nightly should be installed before other dependencies)
     install_pytorch_nightly
-    install_sage_attention
     
     install_comfyui_core
+    install_sage_attention
     install_custom_nodes
     download_models
     
