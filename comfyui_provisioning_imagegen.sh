@@ -227,7 +227,7 @@ parse_hf_url() {
     local filename
     
     # Extract repo_id (format: username/repo-name)
-    repo_id=$(echo "$url" | sed -n 's|.*huggingface\.co/\([^/]*/[^/]*\).*|\1|p')
+    repo_id=$(echo "$url" | sed -n 's|.*huggingface\.co/\([^/]*/[^/]*\)/.*|\1|p')
     
     # Extract filename from the end of the URL
     filename=$(echo "$url" | sed -n 's|.*/\([^/]*\)$|\1|p')
@@ -240,8 +240,8 @@ get_model_output_path() {
     local model_type="$1"
     local hf_url="$2"
     
-    # Extract the path between huggingface.co and resolve
-    local path_component=$(echo "$hf_url" | sed -n 's|.*huggingface\.co/\([^/]*\)/\([^/]*\).*resolve.*|\1/\2|p')
+    # Extract the path between huggingface.co and resolve (username/repo-name)
+    local path_component=$(echo "$hf_url" | sed -n 's|.*huggingface\.co/\([^/]*/[^/]*\)/.*resolve.*|\1|p')
     
     # Return the full path
     echo "models/$model_type/$path_component"
@@ -259,10 +259,23 @@ download_model_hf() {
     local url_subfolder
     local download_cmd
     
+    # Validate inputs
+    if [ -z "$model_type" ] || [ -z "$hf_url" ]; then
+        log_error "download_model_hf called with empty parameters: model_type='$model_type', hf_url='$hf_url'"
+        return 1
+    fi
+
     # Parse the HuggingFace URL
     parsed_info=$(parse_hf_url "$hf_url")
     repo_id=$(echo "$parsed_info" | cut -d':' -f1)
     filename=$(echo "$parsed_info" | cut -d':' -f2)
+    
+    # Validate parsed info
+    if [ -z "$repo_id" ] || [ -z "$filename" ]; then
+        log_error "Failed to parse HuggingFace URL: $hf_url"
+        log_error "Parsed - repo_id: '$repo_id', filename: '$filename'"
+        return 1
+    fi
     
     # Get output directory preserving the original HF path structure
     output_dir=$(get_model_output_path "$model_type" "$hf_url")
