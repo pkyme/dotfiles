@@ -7,11 +7,106 @@
 #   HF_TOKEN - Hugging Face token for authentication (optional but recommended)
 #            - Get your token from: https://huggingface.co/settings/tokens
 #            - Usage: export HF_TOKEN="your_token_here" && ./script.sh
+#
+# Model Architecture Control Variables (set to "true" to download):
+#   DOWNLOAD_ALL - Download all models (overrides individual settings, default: false)
+#   DOWNLOAD_{GROUP_NAME} - Download specific model group (see MODEL_GROUPS below)
+#
+# Performance Enhancement Variables:
+#   INSTALL_SAGE_ATTENTION - Install SageAttention library for faster attention computation (default: false)
+#                          - When enabled, ComfyUI will automatically use --use-sage-attention flag
+#   INSTALL_PYTORCH_NIGHTLY - Install latest PyTorch nightly build for cutting-edge features and performance (default: false)
+#                           - Uses CUDA 12.8 compatible builds
 
 # Configuration
 COMFYUI_DIR="ComfyUI"
 LISTEN_HOST="0.0.0.0"  # Changed from localhost for vast.ai accessibility
 LISTEN_PORT="3000"
+
+# Global download control
+DOWNLOAD_ALL="${DOWNLOAD_ALL:-false}"
+
+# Performance enhancement control
+INSTALL_SAGE_ATTENTION="${INSTALL_SAGE_ATTENTION:-false}"
+INSTALL_PYTORCH_NIGHTLY="${INSTALL_PYTORCH_NIGHTLY:-false}"
+
+# ================================
+# MODEL GROUP CONFIGURATION
+# ================================
+# To add a new model group:
+# 1. Add it to the MODEL_GROUPS array
+# 2. Define the models in the corresponding function below
+# 3. Set the default download behavior
+# That's it! No other changes needed.
+
+# Define all available model groups
+MODEL_GROUPS=(
+    "SDXL:true"           # SDXL models - enabled by default
+    "FLUX:true"           # Flux models - enabled by default  
+    "SD3:false"           # SD3 models - disabled by default
+    "CONTROLNET_EXTRAS:false"  # Extra ControlNet models - disabled by default
+    "IPADAPTER:false"     # IP-Adapter models - disabled by default
+)
+
+# Model definitions for each group
+# Add new groups by creating a new function following this pattern:
+# define_models_GROUPNAME() { MODELS=("url:type" "url:type" ...); }
+
+define_models_SDXL() {
+    MODELS=(
+        "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors:checkpoints"
+        "https://huggingface.co/xinsir/controlnet-union-sdxl-1.0/resolve/main/diffusion_pytorch_model_promax.safetensors:controlnet"
+    )
+}
+
+define_models_FLUX() {
+    MODELS=(
+        "https://huggingface.co/city96/FLUX.1-dev-gguf/resolve/main/flux1-dev-Q8_0.gguf:diffusion_models"
+        "https://huggingface.co/Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro/resolve/main/diffusion_pytorch_model.safetensors:controlnet"
+        "https://huggingface.co/StableDiffusionVN/Flux/resolve/main/Vae/flux_vae.safetensors:vae"
+        "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q8_0.gguf:text_encoders"
+        "https://huggingface.co/QuantStack/FLUX.1-Kontext-dev-GGUF/resolve/main/flux1-kontext-dev-Q8_0.gguf:unet"
+    )
+}
+
+define_models_SD3() {
+    MODELS=(
+        "https://huggingface.co/Comfy-Org/stable-diffusion-3.5-fp8/resolve/main/text_encoders/clip_l.safetensors:text_encoders"
+        # Add more SD3 models here as needed
+    )
+}
+
+define_models_CONTROLNET_EXTRAS() {
+    MODELS=(
+        # Additional ControlNet models that work across architectures
+        # Add more here as needed
+    )
+}
+
+define_models_IPADAPTER() {
+    MODELS=(
+        "https://huggingface.co/InstantX/FLUX.1-dev-IP-Adapter/resolve/main/ip-adapter.bin:ipadapter-flux"
+        "https://huggingface.co/google/siglip-so400m-patch14-384/resolve/main/model.safetensors:clip_vision"
+        "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors:ipadapter"
+        "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/image_encoder/model.safetensors:clip_vision"
+    )
+}
+
+# ================================
+# END MODEL CONFIGURATION
+# ================================
+
+# Initialize download variables based on MODEL_GROUPS configuration
+init_download_variables() {
+    for group_config in "${MODEL_GROUPS[@]}"; do
+        local group_name="${group_config%:*}"
+        local default_value="${group_config#*:}"
+        local var_name="DOWNLOAD_${group_name}"
+        
+        # Set the variable to the environment value or the default
+        declare -g "$var_name"="${!var_name:-$default_value}"
+    done
+}
 
 # Logging functions
 log_info() {
@@ -28,6 +123,46 @@ log_warning() {
 
 log_error() {
     echo -e "[ERROR] $1"
+}
+
+# Function to check if a model group should be downloaded
+should_download_group() {
+    local group_name="$1"
+    local var_name="DOWNLOAD_${group_name}"
+    local group_value="${!var_name:-false}"
+    
+    # If DOWNLOAD_ALL is true, download everything
+    if [ "$DOWNLOAD_ALL" = "true" ]; then
+        return 0
+    fi
+    
+    # Otherwise check the specific group variable
+    if [ "$group_value" = "true" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Function to log download decisions
+log_download_decisions() {
+    log_info "Model download configuration:"
+    
+    if [ "$DOWNLOAD_ALL" = "true" ]; then
+        log_info "  DOWNLOAD_ALL: true (all models will be downloaded)"
+        return
+    fi
+    
+    for group_config in "${MODEL_GROUPS[@]}"; do
+        local group_name="${group_config%:*}"
+        local var_name="DOWNLOAD_${group_name}"
+        local var_value="${!var_name:-false}"
+        local status="❌"
+        if [ "$var_value" = "true" ]; then
+            status="✅"
+        fi
+        log_info "  $var_name: $var_value $status"
+    done
 }
 
 # Function to install Hugging Face CLI if not present
@@ -184,7 +319,42 @@ download_model_hf() {
     fi
 }
 
-# Function to install ComfyUI core
+# Function to install PyTorch nightly
+install_pytorch_nightly() {
+    if [ "$INSTALL_PYTORCH_NIGHTLY" = "true" ]; then
+        log_info "Installing PyTorch nightly build for cutting-edge features and performance..."
+        log_warning "This will replace the current PyTorch installation with the latest nightly build"
+        
+        pip3 install --upgrade --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128
+        
+        log_success "PyTorch nightly build installed"
+        
+        # Log the installed version
+        local torch_version=$(python -c "import torch; print(f'PyTorch {torch.version.__version__} (CUDA: {torch.version.cuda})')" 2>/dev/null || echo "Unable to detect version")
+        log_info "Installed version: $torch_version"
+    else
+        log_info "Skipping PyTorch nightly installation (INSTALL_PYTORCH_NIGHTLY is not set to true)"
+    fi
+}
+
+# Function to install SageAttention library
+install_sage_attention() {
+    if [ "$INSTALL_SAGE_ATTENTION" = "true" ]; then
+        log_info "Installing SageAttention library for faster attention computation..."
+        
+        if [ ! -d "SageAttention" ]; then
+            git clone https://github.com/thu-ml/SageAttention.git
+            cd SageAttention/
+            pip install -e .
+            cd ..
+            log_success "SageAttention library installed"
+        else
+            log_warning "SageAttention directory already exists, skipping installation"
+        fi
+    else
+        log_info "Skipping SageAttention installation (INSTALL_SAGE_ATTENTION is not set to true)"
+    fi
+}
 install_comfyui_core() {
     log_info "Installing ComfyUI core..."
     
@@ -228,42 +398,74 @@ install_custom_nodes() {
     log_success "All custom nodes installed"
 }
 
+# Function to download models for a specific group
+download_model_group() {
+    local group_name="$1"
+    
+    if should_download_group "$group_name"; then
+        log_info "Downloading $group_name models..."
+        
+        # Call the corresponding define_models function
+        local define_function="define_models_${group_name}"
+        if declare -f "$define_function" > /dev/null; then
+            # Clear MODELS array and populate it
+            MODELS=()
+            $define_function
+            
+            # Download each model in the group
+            for url_type in "${MODELS[@]}"; do
+                if [ -n "$url_type" ]; then  # Skip empty entries
+                    local url="${url_type%:*}"
+                    local model_type="${url_type#*:}"
+                    download_model_hf "$model_type" "$url"
+                fi
+            done
+            
+            log_success "$group_name models downloaded"
+        else
+            log_error "No model definition function found for $group_name"
+        fi
+    else
+        log_info "Skipping $group_name models (DOWNLOAD_${group_name} is not set to true)"
+    fi
+}
+
 # Function to download all models
 download_models() {
-    log_info "Downloading models..."
+    log_info "Starting model downloads..."
     
     # Install HF CLI and check for token
     install_hf_cli
     check_hf_token
     
-    # Define models to download (huggingface_url:model_type pairs)
-    declare -A model_downloads=(
-        ["https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors"]="checkpoints"
-        ["https://huggingface.co/city96/FLUX.1-dev-gguf/resolve/main/flux1-dev-Q8_0.gguf"]="diffusion_models"
-        ["https://huggingface.co/Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro/resolve/main/diffusion_pytorch_model.safetensors"]="controlnet"
-        ["https://huggingface.co/xinsir/controlnet-union-sdxl-1.0/resolve/main/diffusion_pytorch_model_promax.safetensors"]="controlnet"
-        ["https://huggingface.co/StableDiffusionVN/Flux/resolve/main/Vae/flux_vae.safetensors"]="vae"
-        ["https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q8_0.gguf"]="text_encoders"
-        ["https://huggingface.co/Comfy-Org/stable-diffusion-3.5-fp8/resolve/main/text_encoders/clip_l.safetensors"]="text_encoders"
-        # ["https://huggingface.co/InstantX/FLUX.1-dev-IP-Adapter/resolve/main/ip-adapter.bin"]="ipadapter-flux"
-        # ["https://huggingface.co/google/siglip-so400m-patch14-384/resolve/main/model.safetensors"]="clip_vision"
-        # ["https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors"]="ipadapter"
-        # ["https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/image_encoder/model.safetensors"]="clip_vision"
-        ["https://huggingface.co/QuantStack/FLUX.1-Kontext-dev-GGUF/resolve/main/flux1-kontext-dev-Q8_0.gguf"]="unet"
-    )
+    # Log download decisions
+    log_download_decisions
     
-    for url in "${!model_downloads[@]}"; do
-        local model_type="${model_downloads[$url]}"
-        download_model_hf "$model_type" "$url"
+    # Download each model group
+    for group_config in "${MODEL_GROUPS[@]}"; do
+        local group_name="${group_config%:*}"
+        download_model_group "$group_name"
     done
     
-    log_success "All models downloaded"
+    log_success "Model download process completed"
 }
 
 # Function to start ComfyUI
 start_comfyui() {
+    local comfyui_args="--listen $LISTEN_HOST --port $LISTEN_PORT"
+    
+    # Add SageAttention flag if enabled
+    if [ "$INSTALL_SAGE_ATTENTION" = "true" ]; then
+        comfyui_args="$comfyui_args --use-sage-attention"
+        log_info "SageAttention enabled - using --use-sage-attention flag"
+    fi
+    
     log_info "Starting ComfyUI on $LISTEN_HOST:$LISTEN_PORT"
-    python main.py --listen "$LISTEN_HOST" --port "$LISTEN_PORT"
+    if [ "$INSTALL_SAGE_ATTENTION" = "true" ]; then
+        log_info "SageAttention optimization active"
+    fi
+    
+    python main.py $comfyui_args
 }
 
 # Main execution function
@@ -274,10 +476,17 @@ main() {
     # Cause the script to exit on failure.
     set -eo pipefail
 
+    # Initialize download variables from MODEL_GROUPS configuration
+    init_download_variables
+
     # Activate the main virtual environment
     . /venv/main/bin/activate
     
+    # Install performance enhancements first (PyTorch nightly should be installed before other dependencies)
+    install_pytorch_nightly
+    
     install_comfyui_core
+    install_sage_attention
     install_custom_nodes
     download_models
     
@@ -287,7 +496,11 @@ main() {
     if [ "${1:-}" != "--setup-only" ]; then
         start_comfyui
     else
-        log_info "Setup complete. Run 'cd $COMFYUI_DIR && python main.py --listen $LISTEN_HOST --port $LISTEN_PORT' to start ComfyUI"
+        local start_command="cd $COMFYUI_DIR && python main.py --listen $LISTEN_HOST --port $LISTEN_PORT"
+        if [ "$INSTALL_SAGE_ATTENTION" = "true" ]; then
+            start_command="$start_command --use-sage-attention"
+        fi
+        log_info "Setup complete. Run '$start_command' to start ComfyUI"
     fi
 }
 
