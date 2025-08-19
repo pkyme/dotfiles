@@ -428,21 +428,22 @@ download_model_group() {
             # Download each model in the group
             for url_type in "${MODELS[@]}"; do
                 if [ -n "$url_type" ]; then  # Skip empty entries
-                    # Test the extraction
-                    local test_url="${url_type%:*}"
-                    local test_type="${url_type#*:}"
+                    # Extract URL (everything before the last colon)
+                    local extracted_url="${url_type%:*}"
+                    # Extract model type (everything after the last colon)
+                    local extracted_type="${url_type##*:}"
                     
                     log_info "Processing: $url_type"
-                    log_info "  -> URL: $test_url"
-                    log_info "  -> Type: $test_type"
+                    log_info "  -> URL: $extracted_url"
+                    log_info "  -> Type: $extracted_type"
                     
                     # Skip if URL and model_type are the same (no colon found)
-                    if [ "$test_url" = "$test_type" ]; then
+                    if [ "$extracted_url" = "$extracted_type" ]; then
                         log_error "Invalid model entry format: $url_type (expected format: url:type)"
                         continue
                     fi
                     
-                    download_model_hf "$test_type" "$test_url"
+                    download_model_hf "$extracted_type" "$extracted_url"
                 fi
             done
             
