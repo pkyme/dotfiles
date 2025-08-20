@@ -444,6 +444,7 @@ install_custom_nodes() {
             "https://github.com/munkyfoot/ComfyUI-TextOverlay.git"
             "https://github.com/Nourepide/ComfyUI-Allor.git"
             "https://github.com/kijai/ComfyUI-segment-anything-2.git"
+            "https://github.com/kijai/ComfyUI-WanVideoWrapper.git"
             # "https://github.com/Shakker-Labs/ComfyUI-IPAdapter-Flux.git"
             # "https://github.com/cubiq/ComfyUI_IPAdapter_plus.git"
         )
