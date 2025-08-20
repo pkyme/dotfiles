@@ -8,6 +8,10 @@
 #            - Get your token from: https://huggingface.co/settings/tokens
 #            - Usage: export HF_TOKEN="your_token_here" && ./script.sh
 #
+# Installation Control Variables:
+#   INSTALL_COMFYUI - Install and run ComfyUI core (default: true)
+#   INSTALL_CUSTOM_NODES - Install custom nodes (default: true)
+#
 # Model Architecture Control Variables (set to "true" to download):
 #   DOWNLOAD_ALL - Download all models (overrides individual settings, default: false)
 #   DOWNLOAD_{GROUP_NAME} - Download specific model group (see MODEL_GROUPS below)
@@ -22,6 +26,10 @@
 COMFYUI_DIR="ComfyUI"
 LISTEN_HOST="0.0.0.0"  # Changed from localhost for vast.ai accessibility
 LISTEN_PORT="3000"
+
+# Installation control
+INSTALL_COMFYUI="${INSTALL_COMFYUI:-true}"
+INSTALL_CUSTOM_NODES="${INSTALL_CUSTOM_NODES:-true}"
 
 # Global download control
 DOWNLOAD_ALL="${DOWNLOAD_ALL:-false}"
@@ -41,8 +49,8 @@ INSTALL_PYTORCH_NIGHTLY="${INSTALL_PYTORCH_NIGHTLY:-false}"
 
 # Define all available model groups
 MODEL_GROUPS=(
-    "SDXL:true"           # SDXL models - enabled by default
-    "FLUX:true"           # Flux models - enabled by default  
+    "SDXL:false"          # SDXL models - disabled by default
+    "FLUX:false"          # Flux models - disabled by default  
     "SD3:false"           # SD3 models - disabled by default
     "CONTROLNET_EXTRAS:false"  # Extra ControlNet models - disabled by default
     "IPADAPTER:false"     # IP-Adapter models - disabled by default
@@ -123,6 +131,23 @@ log_warning() {
 
 log_error() {
     echo -e "[ERROR] $1"
+}
+
+# Function to log installation decisions
+log_installation_decisions() {
+    log_info "Installation configuration:"
+    
+    local comfyui_status="❌"
+    if [ "$INSTALL_COMFYUI" = "true" ]; then
+        comfyui_status="✅"
+    fi
+    log_info "  INSTALL_COMFYUI: $INSTALL_COMFYUI $comfyui_status"
+    
+    local nodes_status="❌"
+    if [ "$INSTALL_CUSTOM_NODES" = "true" ]; then
+        nodes_status="✅"
+    fi
+    log_info "  INSTALL_CUSTOM_NODES: $INSTALL_CUSTOM_NODES $nodes_status"
 }
 
 # Function to check if a model group should be downloaded
@@ -368,47 +393,60 @@ install_sage_attention() {
         log_info "Skipping SageAttention installation (INSTALL_SAGE_ATTENTION is not set to true)"
     fi
 }
+
 install_comfyui_core() {
-    log_info "Installing ComfyUI core..."
-    
-    if [ ! -d "$COMFYUI_DIR" ]; then
-        git clone https://github.com/comfyanonymous/ComfyUI.git "$COMFYUI_DIR"
-        cd "$COMFYUI_DIR"
-        pip install -r requirements.txt
-        log_success "ComfyUI core installed"
+    if [ "$INSTALL_COMFYUI" = "true" ]; then
+        log_info "Installing ComfyUI core..."
+        
+        if [ ! -d "$COMFYUI_DIR" ]; then
+            git clone https://github.com/comfyanonymous/ComfyUI.git "$COMFYUI_DIR"
+            cd "$COMFYUI_DIR"
+            pip install -r requirements.txt
+            log_success "ComfyUI core installed"
+        else
+            log_warning "ComfyUI directory already exists"
+            cd "$COMFYUI_DIR"
+        fi
     else
-        log_warning "ComfyUI directory already exists"
-        cd "$COMFYUI_DIR"
+        log_info "Skipping ComfyUI core installation (INSTALL_COMFYUI is not set to true)"
+        # Still need to change to the directory if it exists for other operations
+        if [ -d "$COMFYUI_DIR" ]; then
+            cd "$COMFYUI_DIR"
+        fi
     fi
 }
 
 # Function to install all custom nodes
 install_custom_nodes() {
-    log_info "Installing custom nodes..."
-    
-    # Define custom nodes to install (just GitHub URLs)
-    local custom_node_urls=(
-        "https://github.com/ltdrdata/ComfyUI-Manager.git"
-        "https://github.com/kijai/ComfyUI-KJNodes.git"
-        "https://github.com/aria1th/ComfyUI-LogicUtils.git"
-        "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git"
-        "https://github.com/Fannovel16/comfyui_controlnet_aux.git"
-        "https://github.com/rgthree/rgthree-comfy.git"
-        "https://github.com/city96/ComfyUI-GGUF"
-        "https://github.com/yolain/ComfyUI-Easy-Use"
-        "https://github.com/StableLlama/ComfyUI-basic_data_handling"
-        "https://github.com/munkyfoot/ComfyUI-TextOverlay.git"
-        "https://github.com/Nourepide/ComfyUI-Allor.git"
-        "https://github.com/kijai/ComfyUI-segment-anything-2.git"
-        # "https://github.com/Shakker-Labs/ComfyUI-IPAdapter-Flux.git"
-        # "https://github.com/cubiq/ComfyUI_IPAdapter_plus.git"
-    )
-    
-    for repo_url in "${custom_node_urls[@]}"; do
-        install_custom_node "$repo_url"
-    done
-    
-    log_success "All custom nodes installed"
+    if [ "$INSTALL_CUSTOM_NODES" = "true" ]; then
+        log_info "Installing custom nodes..."
+        
+        # Define custom nodes to install (just GitHub URLs)
+        local custom_node_urls=(
+            "https://github.com/ltdrdata/ComfyUI-Manager.git"
+            "https://github.com/kijai/ComfyUI-KJNodes.git"
+            "https://github.com/aria1th/ComfyUI-LogicUtils.git"
+            "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git"
+            "https://github.com/Fannovel16/comfyui_controlnet_aux.git"
+            "https://github.com/rgthree/rgthree-comfy.git"
+            "https://github.com/city96/ComfyUI-GGUF"
+            "https://github.com/yolain/ComfyUI-Easy-Use"
+            "https://github.com/StableLlama/ComfyUI-basic_data_handling"
+            "https://github.com/munkyfoot/ComfyUI-TextOverlay.git"
+            "https://github.com/Nourepide/ComfyUI-Allor.git"
+            "https://github.com/kijai/ComfyUI-segment-anything-2.git"
+            # "https://github.com/Shakker-Labs/ComfyUI-IPAdapter-Flux.git"
+            # "https://github.com/cubiq/ComfyUI_IPAdapter_plus.git"
+        )
+        
+        for repo_url in "${custom_node_urls[@]}"; do
+            install_custom_node "$repo_url"
+        done
+        
+        log_success "All custom nodes installed"
+    else
+        log_info "Skipping custom nodes installation (INSTALL_CUSTOM_NODES is not set to true)"
+    fi
 }
 
 # Function to download models for a specific group
@@ -433,9 +471,9 @@ download_model_group() {
                     # Extract model type (everything after the last colon)
                     local extracted_type="${url_type##*:}"
                     
-                    log_info "Processing: $url_type"
-                    log_info "  -> URL: $extracted_url"
-                    log_info "  -> Type: $extracted_type"
+                    # log_info "Processing: $url_type"
+                    # log_info "  -> URL: $extracted_url"
+                    # log_info "  -> Type: $extracted_type"
                     
                     # Skip if URL and model_type are the same (no colon found)
                     if [ "$extracted_url" = "$extracted_type" ]; then
@@ -476,22 +514,39 @@ download_models() {
     log_success "Model download process completed"
 }
 
-# Function to start ComfyUI
-start_comfyui() {
-    local comfyui_args="--listen $LISTEN_HOST --port $LISTEN_PORT"
+# Function to build ComfyUI launch command
+build_comfyui_command() {
+    local base_command="cd $COMFYUI_DIR && python main.py --listen $LISTEN_HOST --port $LISTEN_PORT"
     
     # Add SageAttention flag if enabled
     if [ "$INSTALL_SAGE_ATTENTION" = "true" ]; then
-        comfyui_args="$comfyui_args --use-sage-attention"
-        log_info "SageAttention enabled - using --use-sage-attention flag"
+        base_command="$base_command --use-sage-attention"
     fi
     
-    log_info "Starting ComfyUI on $LISTEN_HOST:$LISTEN_PORT"
-    if [ "$INSTALL_SAGE_ATTENTION" = "true" ]; then
-        log_info "SageAttention optimization active"
+    echo "$base_command"
+}
+
+# Function to start ComfyUI
+start_comfyui() {
+    if [ "$INSTALL_COMFYUI" = "true" ]; then
+        local comfyui_args="--listen $LISTEN_HOST --port $LISTEN_PORT"
+        
+        # Add SageAttention flag if enabled
+        if [ "$INSTALL_SAGE_ATTENTION" = "true" ]; then
+            comfyui_args="$comfyui_args --use-sage-attention"
+            log_info "SageAttention enabled - using --use-sage-attention flag"
+        fi
+        
+        log_info "Starting ComfyUI on $LISTEN_HOST:$LISTEN_PORT"
+        if [ "$INSTALL_SAGE_ATTENTION" = "true" ]; then
+            log_info "SageAttention optimization active"
+        fi
+        
+        python main.py $comfyui_args
+    else
+        log_info "ComfyUI installation was skipped - cannot start ComfyUI"
+        log_info "To start ComfyUI later, set INSTALL_COMFYUI=true and re-run the script"
     fi
-    
-    python main.py $comfyui_args
 }
 
 # Main execution function
@@ -504,6 +559,9 @@ main() {
 
     # Initialize download variables from MODEL_GROUPS configuration
     init_download_variables
+
+    # Log installation and download decisions
+    log_installation_decisions
 
     # Activate the main virtual environment
     . /venv/main/bin/activate
@@ -518,15 +576,17 @@ main() {
     
     log_success "ComfyUI provisioning completed successfully!"
     
-    # Start ComfyUI if not in setup-only mode
+    # Start ComfyUI if not in setup-only mode and if ComfyUI was installed
     if [ "${1:-}" != "--setup-only" ]; then
         start_comfyui
     else
-        local start_command="cd $COMFYUI_DIR && python main.py --listen $LISTEN_HOST --port $LISTEN_PORT"
-        if [ "$INSTALL_SAGE_ATTENTION" = "true" ]; then
-            start_command="$start_command --use-sage-attention"
+        if [ "$INSTALL_COMFYUI" = "true" ]; then
+            local start_command=$(build_comfyui_command)
+            log_info "Setup complete. Run '$start_command' to start ComfyUI"
+        else
+            log_info "Setup complete. ComfyUI installation was skipped."
+            log_info "To install and start ComfyUI, set INSTALL_COMFYUI=true and re-run the script"
         fi
-        log_info "Setup complete. Run '$start_command' to start ComfyUI"
     fi
 }
 
