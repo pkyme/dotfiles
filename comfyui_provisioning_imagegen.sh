@@ -383,7 +383,7 @@ install_sage_attention() {
         if [ ! -d "SageAttention" ]; then
             git clone https://github.com/thu-ml/SageAttention.git
             cd SageAttention/
-            pip install -e .
+            python setup.py install  # or pip install -e .
             cd ..
             log_success "SageAttention library installed"
         else
