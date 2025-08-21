@@ -55,6 +55,7 @@ MODEL_GROUPS=(
     "CONTROLNET_EXTRAS:false"  # Extra ControlNet models - disabled by default
     "IPADAPTER:false"     # IP-Adapter models - disabled by default
     "WAN21T2V14B:false"      # Wan 2.1 Text to Video 14B
+    "WAN22I2V14B:false"
 )
 
 # Model definitions for each group
@@ -104,6 +105,15 @@ define_models_IPADAPTER() {
 define_models_WAN21T2V14B() {
     MODELS=(
         "https://huggingface.co/city96/Wan2.1-T2V-14B-gguf/resolve/main/wan2.1-t2v-14b-Q8_0.gguf:diffusion_models"
+        "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors:vae"
+        "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors:text_encoders"
+    )
+}
+
+define_models_WAN22I2V14B() {
+    MODELS=(
+        "https://huggingface.co/bullerwins/Wan2.2-I2V-A14B-GGUF/resolve/main/wan2.2_i2v_high_noise_14B_Q8_0.gguf:diffusion_models"
+        "https://huggingface.co/bullerwins/Wan2.2-I2V-A14B-GGUF/resolve/main/wan2.2_i2v_low_noise_14B_Q8_0.gguf:diffusion_models"
         "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors:vae"
         "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors:text_encoders"
     )
