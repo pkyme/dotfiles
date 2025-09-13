@@ -57,7 +57,8 @@ MODEL_GROUPS=(
     "WAN21T2V14B:false"      # Wan 2.1 Text to Video 14B
     "WAN22I2V14B:false"
     "WAN22I2V14B_fp8:false"
-
+    "VIEWCRAFTER:false"
+    "UNI3C:false"
 )
 
 # Model definitions for each group
@@ -129,6 +130,18 @@ define_models_WAN22I2V14B_fp8() {
         "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors:vae"
         "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/Lightx2v/lightx2v_I2V_14B_480p_cfg_step_distill_rank64_bf16.safetensors:loras"
         "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors:text_encoders"
+    )
+}
+
+define_models_VIEWCRAFTER() {
+    MODELS=(
+        "https://huggingface.co/Drexubery/ViewCrafter_25/resolve/main/model.ckpt:viewcrafter"
+    )
+}
+
+define_models_UNI3C() {
+    MODELS=(
+        "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/Wan21_Uni3C_controlnet_fp16.safetensors:controlnet"
     )
 }
 
@@ -472,6 +485,7 @@ install_custom_nodes() {
             # "https://github.com/Shakker-Labs/ComfyUI-IPAdapter-Flux.git"
             # "https://github.com/cubiq/ComfyUI_IPAdapter_plus.git"
             "https://github.com/numz/ComfyUI-SeedVR2_VideoUpscaler.git"
+            "https://github.com/logtd/ComfyUI-ViewCrafter.git"
         )
         
         for repo_url in "${custom_node_urls[@]}"; do
