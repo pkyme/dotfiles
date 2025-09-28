@@ -525,6 +525,8 @@ install_comfyui_core() {
 install_custom_nodes() {
     if [ "$INSTALL_CUSTOM_NODES" = "true" ]; then
         log_info "Installing custom nodes..."
+
+        apt -y install libcairo2-dev pkg-config python3-dev
         
         # Define custom nodes to install (just GitHub URLs)
         local custom_node_urls=(
