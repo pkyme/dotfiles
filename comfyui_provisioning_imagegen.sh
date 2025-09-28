@@ -490,6 +490,10 @@ install_sage_attention() {
             cd SageAttention/
             python setup.py install  # or pip install -e .
             cd ..
+            git clone https://huggingface.co/jt-zhang/SageAttention3
+            cd SageAttention3 
+            python setup.py install 
+
             log_success "SageAttention library installed"
         else
             log_warning "SageAttention directory already exists, skipping installation"
