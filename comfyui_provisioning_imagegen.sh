@@ -49,8 +49,9 @@ INSTALL_PYTORCH_NIGHTLY="${INSTALL_PYTORCH_NIGHTLY:-false}"
 
 # Define all available model groups
 MODEL_GROUPS=(
+    "UPSCALERS:true"
     "SDXL:false"          # SDXL models - disabled by default
-    "FLUX:false"          # Flux models - disabled by default  
+    "FLUX:false"          # Flux models - disabled by default
     "SD3:false"           # SD3 models - disabled by default
     "CONTROLNET_EXTRAS:false"  # Extra ControlNet models - disabled by default
     "IPADAPTER:false"     # IP-Adapter models - disabled by default
@@ -69,6 +70,20 @@ MODEL_GROUPS=(
 # Model definitions for each group
 # Add new groups by creating a new function following this pattern:
 # define_models_GROUPNAME() { MODELS=("url:type" "url:type" ...); }
+
+define_models_UPSCALERS() {
+    MODELS=(
+        "https://huggingface.co/LS110824/upscale/resolve/main/4x-ClearRealityV1.pth:upscale_models"
+        "https://huggingface.co/LS110824/upscale/resolve/main/4x-ClearRealityV1_Soft.pth:upscale_models"
+        "https://huggingface.co/LS110824/upscale/resolve/main/4x-UltraSharp.pth:upscale_models"
+        "https://huggingface.co/LS110824/upscale/resolve/main/RealESRGAN_x4plus.pth:upscale_models"
+        "https://huggingface.co/LS110824/upscale/resolve/main/4x_foolhardy_Remacri.pth:upscale_models"
+        "https://huggingface.co/LS110824/upscale/resolve/main/4xNomos2_hq_dat2.safetensors:upscale_models"
+        "https://huggingface.co/LS110824/upscale/resolve/main/4xNomos8kSC.pth:upscale_models"
+        "https://huggingface.co/LS110824/upscale/resolve/main/4xLSDIR.pth:upscale_models"
+        "https://huggingface.co/LS110824/upscale/resolve/main/4x_NMKD-Siax_200k.pth:upscale_models"
+    )
+}
 
 define_models_SDXL() {
     MODELS=(
