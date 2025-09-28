@@ -531,6 +531,8 @@ install_custom_nodes() {
             # "https://github.com/cubiq/ComfyUI_IPAdapter_plus.git"
             "https://github.com/numz/ComfyUI-SeedVR2_VideoUpscaler.git"
             "https://github.com/logtd/ComfyUI-ViewCrafter.git"
+            "https://github.com/vrgamegirl19/comfyui-vrgamedevgirl.git"
+            "https://github.com/ClownsharkBatwing/RES4LYF.git"
         )
         
         for repo_url in "${custom_node_urls[@]}"; do
