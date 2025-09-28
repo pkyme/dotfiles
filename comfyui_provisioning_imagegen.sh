@@ -486,13 +486,26 @@ install_sage_attention() {
         log_info "Installing SageAttention library for faster attention computation..."
         
         if [ ! -d "SageAttention" ]; then
+            compute_cap=$(nvidia-smi --query-gpu=compute_cap --format=csv,noheader,nounits)
+
+            # git clone https://github.com/thu-ml/SageAttention.git
+            # cd SageAttention/
+            # python setup.py install  # or pip install -e .
+            # cd ..
             git clone https://github.com/thu-ml/SageAttention.git
-            cd SageAttention/
-            python setup.py install  # or pip install -e .
+            cd SageAttention 
+            python setup.py install
+
+            if [ -n "$compute_cap" ]; then
+                # Use awk for floating point comparison
+                if (( $(echo $compute_cap 10.0 | awk '{if ($1 >= $2) print 1;}') )); then
+                    cd sageattention3_blackwell
+                    python setup.py install
+                    cd ..
+                fi
+            fi
+
             cd ..
-            git clone https://huggingface.co/jt-zhang/SageAttention3
-            cd SageAttention3 
-            python setup.py install 
 
             log_success "SageAttention library installed"
         else
