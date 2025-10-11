@@ -50,7 +50,7 @@ INSTALL_SAGE_ATTENTION="${INSTALL_SAGE_ATTENTION:-false}"
 # Define all available model groups
 MODEL_GROUPS=(
     "GETTING_STARTED:false"
-    "UPSCALERS:true"
+    "UPSCALERS:false"
     "SDXL:false"          # SDXL models - disabled by default
     "FLUX:false"          # Flux models - disabled by default
     "SD3:false"           # SD3 models - disabled by default
