@@ -379,13 +379,26 @@ parse_hf_url() {
     local file_path
     
     # Extract repo_id (format: username/repo-name)
-    repo_id=$(echo "$url" | sed -n 's|.*huggingface\.co/\([^/]*/[^/]*\)/.*|\1|p')
+    # Handle both single-segment (gpt2) and multi-segment (gjjc/dwm) repos
+    repo_id=$(echo "$url" | sed -n 's|.*huggingface\.co/\([^/]*/[^/]*\)/resolve/.*|\1|p')
+    if [ -z "$repo_id" ]; then
+        # Try single segment repo
+        repo_id=$(echo "$url" | sed -n 's|.*huggingface\.co/\([^/]*\)/resolve/.*|\1|p')
+    fi
     
     # Extract revision (commit hash or "main") from the resolve/ part
-    revision=$(echo "$url" | sed -n 's|.*huggingface\.co/[^/]*/[^/]*/resolve/\([^/]*\)/.*|\1|p')
+    revision=$(echo "$url" | sed -n 's|.*huggingface\.co/[^/]*/resolve/\([^/]*\)/.*|\1|p')
+    if [ -z "$revision" ]; then
+        # Try with two-segment repo
+        revision=$(echo "$url" | sed -n 's|.*huggingface\.co/[^/]*/[^/]*/resolve/\([^/]*\)/.*|\1|p')
+    fi
     
     # Extract the full file path within the repository (everything after resolve/<revision>/)
-    file_path=$(echo "$url" | sed -n 's|.*huggingface\.co/[^/]*/[^/]*/resolve/[^/]*/\(.*\)|\1|p')
+    file_path=$(echo "$url" | sed -n 's|.*huggingface\.co/[^/]*/resolve/[^/]*/\(.*\)|\1|p')
+    if [ -z "$file_path" ]; then
+        # Try with two-segment repo
+        file_path=$(echo "$url" | sed -n 's|.*huggingface\.co/[^/]*/[^/]*/resolve/[^/]*/\(.*\)|\1|p')
+    fi
     
     echo "$repo_id:$file_path:$revision"
 }
@@ -423,7 +436,11 @@ download_model_hf() {
     revision=$(echo "$parsed_info" | cut -d':' -f3)
     
     # Extract just the filename for local storage (strip parent directories)
-    filename=$(echo "$file_path" | sed -n 's|.*/\([^/]*\)$|\1|p')
+    if [[ "$file_path" == *"/"* ]]; then
+        filename="${file_path##*/}"
+    else
+        filename="$file_path"
+    fi
     
     # Validate parsed info
     if [ -z "$repo_id" ] || [ -z "$file_path" ] || [ -z "$revision" ]; then
@@ -463,29 +480,14 @@ download_model_hf() {
     # Download the file using the full path from the URL
     download_cmd="$download_cmd \"$file_path\""
     if eval "$download_cmd"; then
-        # Check if file was downloaded successfully
+        # The Hugging Face CLI automatically moves the file to the final location
+        # Just verify the file exists in the expected location
         if [ -f "$output_dir/$filename" ]; then
             log_success "Downloaded $filename"
         else
-            # Debug: List contents of output directory to see what was downloaded
-            log_info "Output directory contents after download:"
-            find "$output_dir" -name "*$filename*" -type f | while read file; do
-                log_info "  Found: $file"
-            done
-            
-            # Try to find the file with a different name pattern
-            local actual_file
-            actual_file=$(find "$output_dir" -name "*${filename%.*}*" -type f | head -1)
-            
-            if [ -n "$actual_file" ] && [ -f "$actual_file" ]; then
-                # Rename to expected filename
-                mv "$actual_file" "$output_dir/$filename"
-                log_success "Downloaded and renamed to $filename"
-            else
-                log_error "Downloaded file not found: $filename"
-                log_error "Expected in: $output_dir/"
-                return 1
-            fi
+            log_error "Downloaded file not found: $filename"
+            log_error "Expected in: $output_dir/"
+            return 1
         fi
     else
         log_error "Failed to download $filename"
