@@ -89,6 +89,7 @@ define_models_GETTING_STARTED() {
         "https://huggingface.co/hafsa000/interior-design/resolve/main/interiordesignsuperm_v2.safetensors:checkpoints"
         "https://huggingface.co/GreenGrape/231209/resolve/main/majicmixRealistic_v7.safetensors:checkpoints"
         "https://huggingface.co/emmajoanne/models-moved/resolve/main/japaneseStyleRealistic_v20.safetensors:checkpoints"
+        "https://huggingface.co/gjjc/dwm/resolve/e5dec7faab80e451d116b82d53d28463269c33e4/controlnetT2IAdapter_t2iAdapterDepth.safetensors:controlnet"
 
     )
 }
