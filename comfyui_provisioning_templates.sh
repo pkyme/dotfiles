@@ -7,6 +7,9 @@
 #   HF_TOKEN - Hugging Face token for authentication (optional but recommended)
 #            - Get your token from: https://huggingface.co/settings/tokens
 #            - Usage: export HF_TOKEN="your_token_here" && ./script.sh
+#   CUSTOM_NODE_URLS - Space-separated list of custom node GitHub URLs to install
+#                     - Example: export CUSTOM_NODE_URLS="https://github.com/user1/repo1.git https://github.com/user2/repo2.git"
+#                     - URLs from this variable are combined with the default list, removing duplicates
 #
 # Installation Control Variables:
 #   INSTALL_COMFYUI - Install and run ComfyUI core (default: true)
@@ -19,8 +22,6 @@
 # Performance Enhancement Variables:
 #   INSTALL_SAGE_ATTENTION - Install SageAttention library for faster attention computation (default: false)
 #                          - When enabled, ComfyUI will automatically use --use-sage-attention flag
-#   INSTALL_PYTORCH_NIGHTLY - Install latest PyTorch nightly build for cutting-edge features and performance (default: false)
-#                           - Uses CUDA 12.8 compatible builds
 
 # Configuration
 COMFYUI_DIR="ComfyUI"
@@ -36,7 +37,6 @@ DOWNLOAD_ALL="${DOWNLOAD_ALL:-false}"
 
 # Performance enhancement control
 INSTALL_SAGE_ATTENTION="${INSTALL_SAGE_ATTENTION:-false}"
-INSTALL_PYTORCH_NIGHTLY="${INSTALL_PYTORCH_NIGHTLY:-false}"
 
 # ================================
 # MODEL GROUP CONFIGURATION
@@ -49,6 +49,7 @@ INSTALL_PYTORCH_NIGHTLY="${INSTALL_PYTORCH_NIGHTLY:-false}"
 
 # Define all available model groups
 MODEL_GROUPS=(
+    "GETTING_STARTED:false"
     "UPSCALERS:true"
     "SDXL:false"          # SDXL models - disabled by default
     "FLUX:false"          # Flux models - disabled by default
@@ -70,6 +71,18 @@ MODEL_GROUPS=(
 # Model definitions for each group
 # Add new groups by creating a new function following this pattern:
 # define_models_GROUPNAME() { MODELS=("url:type" "url:type" ...); }
+
+define_models_GETTING_STARTED() {
+    MODELS=(
+        "https://huggingface.co/Comfy-Org/stable-diffusion-v1-5-archive/resolve/main/v1-5-pruned-emaonly-fp16.safetensors:checkpoints"
+        "https://huggingface.co/stabilityai/stable-diffusion-2-inpainting/resolve/main/512-inpainting-ema.safetensors:checkpoints"
+        "https://huggingface.co/stabilityai/stable-diffusion-2-1/resolve/main/v2-1_768-ema-pruned.safetensors:checkpoints"
+        "https://huggingface.co/comfyanonymous/GLIGEN_pruned_safetensors/resolve/main/gligen_sd14_textbox_pruned.safetensors:checkpoints"
+        "https://huggingface.co/stabilityai/sd-vae-ft-mse-original/resolve/main/vae-ft-mse-840000-ema-pruned.safetensors:vae"
+        "https://huggingface.co/Lykon/DreamShaper/resolve/main/DreamShaper_8_pruned.safetensors:checkpoints"
+        "https://huggingface.co/Comfy-Org/Real-ESRGAN_repackaged/resolve/main/RealESRGAN_x4plus.safetensors:upscale_models"
+    )
+}
 
 define_models_UPSCALERS() {
     MODELS=(
@@ -365,16 +378,12 @@ parse_hf_url() {
     echo "$repo_id:$filename"
 }
 
-# Function to extract model path from HuggingFace URL (preserving original structure)
+# Function to get model output path (direct subdirectory without HF URL structure)
 get_model_output_path() {
     local model_type="$1"
-    local hf_url="$2"
     
-    # Extract the path between huggingface.co and resolve (username/repo-name)
-    local path_component=$(echo "$hf_url" | sed -n 's|.*huggingface\.co/\([^/]*/[^/]*\)/.*resolve.*|\1|p')
-    
-    # Return the full path
-    echo "models/$model_type/$path_component"
+    # Return the direct subdirectory path
+    echo "models/$model_type"
 }
 
 # Function to download a model file using HuggingFace CLI
@@ -386,7 +395,6 @@ download_model_hf() {
     local repo_id
     local filename
     local output_dir
-    local url_subfolder
     local download_cmd
     
     # Validate inputs
@@ -407,11 +415,8 @@ download_model_hf() {
         return 1
     fi
     
-    # Get output directory preserving the original HF path structure
-    output_dir=$(get_model_output_path "$model_type" "$hf_url")
-    
-    # Extract subfolder from URL if present (path after resolve/main/ or resolve/branch/)
-    url_subfolder=$(echo "$hf_url" | sed -n 's|.*resolve/[^/]*/\(.*\)/[^/]*$|\1|p')
+    # Get output directory (direct subdirectory without HF URL structure)
+    output_dir=$(get_model_output_path "$model_type")
     
     log_info "Downloading $model_type model: $filename from $repo_id to $output_dir/"
     
@@ -435,49 +440,27 @@ download_model_hf() {
     # Add common parameters
     download_cmd="$download_cmd --local-dir \"$output_dir\""
     
-    # Download the file using HF CLI
-    if [ -n "$url_subfolder" ]; then
-        # Download file with subfolder
-        download_cmd="$download_cmd \"$url_subfolder/$filename\""
-        if eval "$download_cmd"; then
-            # Move file from subfolder to main directory to maintain expected structure
-            if [ -f "$output_dir/$url_subfolder/$filename" ]; then
-                mv "$output_dir/$url_subfolder/$filename" "$output_dir/$filename"
-                rmdir "$output_dir/$url_subfolder" 2>/dev/null || true
-            fi
-            log_success "Downloaded $filename"
-        else
-            log_error "Failed to download $filename"
-            return 1
-        fi
+    # Download the file directly
+    download_cmd="$download_cmd \"$filename\""
+    if eval "$download_cmd"; then
+        log_success "Downloaded $filename"
     else
-        # Download file directly
-        download_cmd="$download_cmd \"$filename\""
-        if eval "$download_cmd"; then
-            log_success "Downloaded $filename"
-        else
-            log_error "Failed to download $filename"
-            return 1
-        fi
+        log_error "Failed to download $filename"
+        return 1
     fi
 }
 
-# Function to install PyTorch nightly
-install_pytorch_nightly() {
-    if [ "$INSTALL_PYTORCH_NIGHTLY" = "true" ]; then
-        log_info "Installing PyTorch nightly build for cutting-edge features and performance..."
-        log_warning "This will replace the current PyTorch installation with the latest nightly build"
-        
-        pip3 install --upgrade --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128
-        
-        log_success "PyTorch nightly build installed"
-        
-        # Log the installed version
-        local torch_version=$(python -c "import torch; print(f'PyTorch {torch.version.__version__} (CUDA: {torch.version.cuda})')" 2>/dev/null || echo "Unable to detect version")
-        log_info "Installed version: $torch_version"
-    else
-        log_info "Skipping PyTorch nightly installation (INSTALL_PYTORCH_NIGHTLY is not set to true)"
-    fi
+# Function to install PyTorch 2.8
+install_pytorch_28() {
+    log_info "Installing PyTorch 2.8 official release..."
+    
+    pip3 install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+    
+    log_success "PyTorch 2.8 installed"
+    
+    # Log the installed version
+    local torch_version=$(python -c "import torch; print(f'PyTorch {torch.version.__version__} (CUDA: {torch.version.cuda})')" 2>/dev/null || echo "Unable to detect version")
+    log_info "Installed version: $torch_version"
 }
 
 # Function to install SageAttention library
@@ -541,8 +524,8 @@ install_custom_nodes() {
 
         apt -y install libcairo2-dev pkg-config python3-dev
         
-        # Define custom nodes to install (just GitHub URLs)
-        local custom_node_urls=(
+        # Default custom nodes to install (just GitHub URLs)
+        local default_custom_node_urls=(
             "https://github.com/ltdrdata/ComfyUI-Manager.git"
             "https://github.com/kijai/ComfyUI-KJNodes.git"
             "https://github.com/aria1th/ComfyUI-LogicUtils.git"
@@ -557,15 +540,38 @@ install_custom_nodes() {
             "https://github.com/kijai/ComfyUI-segment-anything-2.git"
             "https://github.com/kijai/ComfyUI-WanVideoWrapper.git"
             "https://github.com/Fannovel16/ComfyUI-Frame-Interpolation.git"
-            # "https://github.com/Shakker-Labs/ComfyUI-IPAdapter-Flux.git"
-            # "https://github.com/cubiq/ComfyUI_IPAdapter_plus.git"
-            "https://github.com/numz/ComfyUI-SeedVR2_VideoUpscaler.git"
-            "https://github.com/logtd/ComfyUI-ViewCrafter.git"
-            "https://github.com/vrgamegirl19/comfyui-vrgamedevgirl.git"
-            "https://github.com/ClownsharkBatwing/RES4LYF.git"
         )
         
-        for repo_url in "${custom_node_urls[@]}"; do
+        # Start with default URLs
+        local combined_urls=("${default_custom_node_urls[@]}")
+        
+        # Add URLs from environment variable if set, removing duplicates
+        if [ -n "${CUSTOM_NODE_URLS:-}" ]; then
+            log_info "Adding custom nodes from CUSTOM_NODE_URLS environment variable"
+            local env_urls=($CUSTOM_NODE_URLS)
+            
+            for env_url in "${env_urls[@]}"; do
+                # Check if URL already exists in combined list
+                local found=false
+                for existing_url in "${combined_urls[@]}"; do
+                    if [ "$env_url" = "$existing_url" ]; then
+                        found=true
+                        break
+                    fi
+                done
+                
+                # Add if not found (no duplicate)
+                if [ "$found" = "false" ]; then
+                    combined_urls+=("$env_url")
+                else
+                    log_info "Skipping duplicate URL: $env_url"
+                fi
+            done
+        fi
+        
+        log_info "Installing ${#combined_urls[@]} custom nodes (${#default_custom_node_urls[@]} default + custom URLs)"
+        
+        for repo_url in "${combined_urls[@]}"; do
             install_custom_node "$repo_url"
         done
         
@@ -692,8 +698,8 @@ main() {
     # Activate the main virtual environment
     . /venv/main/bin/activate
     
-    # Install performance enhancements first (PyTorch nightly should be installed before other dependencies)
-    install_pytorch_nightly
+    # Install PyTorch 2.8 first (should be installed before other dependencies)
+    install_pytorch_28
     
     install_comfyui_core
     install_sage_attention
