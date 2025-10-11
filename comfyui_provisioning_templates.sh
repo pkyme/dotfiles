@@ -85,8 +85,10 @@ define_models_GETTING_STARTED() {
         "https://huggingface.co/soinov/My_models/resolve/main/ArchModels/architecturerealmix_v11.safetensors:checkpoints"
         "https://huggingface.co/comfyanonymous/ControlNet-v1-1_fp16_safetensors/resolve/main/control_v11p_sd15_scribble_fp16.safetensors:controlnet"
         "https://huggingface.co/comfyanonymous/ControlNet-v1-1_fp16_safetensors/resolve/main/control_v11p_sd15_openpose_fp16.safetensors:controlnet"
-        "https://huggingface.co/gjjc/dwm/resolve/main/Depth-T2IA.safetensors:controlnet"
+        "https://huggingface.co/gjjc/dwm/resolve/10167b89d1f3535ddce36293ac2be7f2543ed4e6/controlnetT2IAdapter_t2iAdapterOpenpose.safetensors:controlnet"
         "https://huggingface.co/hafsa000/interior-design/resolve/main/interiordesignsuperm_v2.safetensors:checkpoints"
+        "https://huggingface.co/GreenGrape/231209/resolve/main/majicmixRealistic_v7.safetensors:checkpoints"
+        "https://huggingface.co/emmajoanne/models-moved/resolve/main/japaneseStyleRealistic_v20.safetensors:checkpoints"
 
     )
 }
@@ -440,6 +442,9 @@ download_model_hf() {
         return 0
     fi
     
+    # Create a temporary directory for download
+    local temp_dir=$(mktemp -d)
+    
     # Build the base download command
     download_cmd="hf download \"$repo_id\""
     
@@ -448,14 +453,20 @@ download_model_hf() {
         download_cmd="$download_cmd --token \"$HF_TOKEN\""
     fi
     
-    # Add common parameters
-    download_cmd="$download_cmd --local-dir \"$output_dir\""
+    # Download to temp directory to preserve repo structure temporarily
+    download_cmd="$download_cmd --local-dir \"$temp_dir\""
     
     # Download the file using the full path from the URL
     download_cmd="$download_cmd \"$file_path\""
     if eval "$download_cmd"; then
+        # Move just the file (not the directory structure) to the output directory
+        mv "$temp_dir/$file_path" "$output_dir/$filename"
+        # Clean up temp directory
+        rm -rf "$temp_dir"
         log_success "Downloaded $filename"
     else
+        # Clean up temp directory on failure
+        rm -rf "$temp_dir"
         log_error "Failed to download $filename"
         return 1
     fi
