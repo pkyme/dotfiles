@@ -77,10 +77,17 @@ define_models_GETTING_STARTED() {
         "https://huggingface.co/Comfy-Org/stable-diffusion-v1-5-archive/resolve/main/v1-5-pruned-emaonly-fp16.safetensors:checkpoints"
         "https://huggingface.co/stabilityai/stable-diffusion-2-inpainting/resolve/main/512-inpainting-ema.safetensors:checkpoints"
         "https://huggingface.co/stabilityai/stable-diffusion-2-1/resolve/main/v2-1_768-ema-pruned.safetensors:checkpoints"
-        "https://huggingface.co/comfyanonymous/GLIGEN_pruned_safetensors/resolve/main/gligen_sd14_textbox_pruned.safetensors:checkpoints"
+        "https://huggingface.co/comfyanonymous/GLIGEN_pruned_safetensors/resolve/main/gligen_sd14_textbox_pruned.safetensors:gligen"
         "https://huggingface.co/stabilityai/sd-vae-ft-mse-original/resolve/main/vae-ft-mse-840000-ema-pruned.safetensors:vae"
         "https://huggingface.co/Lykon/DreamShaper/resolve/main/DreamShaper_8_pruned.safetensors:checkpoints"
         "https://huggingface.co/Comfy-Org/Real-ESRGAN_repackaged/resolve/main/RealESRGAN_x4plus.safetensors:upscale_models"
+        "https://huggingface.co/comfyanonymous/ControlNet-v1-1_fp16_safetensors/resolve/main/control_v11f1p_sd15_depth_fp16.safetensors:controlnet"
+        "https://huggingface.co/soinov/My_models/resolve/main/ArchModels/architecturerealmix_v11.safetensors:checkpoints"
+        "https://huggingface.co/comfyanonymous/ControlNet-v1-1_fp16_safetensors/resolve/main/control_v11p_sd15_scribble_fp16.safetensors:controlnet"
+        "https://huggingface.co/comfyanonymous/ControlNet-v1-1_fp16_safetensors/resolve/main/control_v11p_sd15_openpose_fp16.safetensors:controlnet"
+        "https://huggingface.co/gjjc/dwm/resolve/main/Depth-T2IA.safetensors:controlnet"
+        "https://huggingface.co/hafsa000/interior-design/resolve/main/interiordesignsuperm_v2.safetensors:checkpoints"
+
     )
 }
 
