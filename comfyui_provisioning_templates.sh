@@ -374,15 +374,15 @@ install_custom_node() {
 parse_hf_url() {
     local url="$1"
     local repo_id
-    local filename
+    local file_path
     
     # Extract repo_id (format: username/repo-name)
     repo_id=$(echo "$url" | sed -n 's|.*huggingface\.co/\([^/]*/[^/]*\)/.*|\1|p')
     
-    # Extract filename from the end of the URL
-    filename=$(echo "$url" | sed -n 's|.*/\([^/]*\)$|\1|p')
+    # Extract the full file path within the repository (everything after resolve/main/)
+    file_path=$(echo "$url" | sed -n 's|.*huggingface\.co/[^/]*/[^/]*/resolve/main/\(.*\)|\1|p')
     
-    echo "$repo_id:$filename"
+    echo "$repo_id:$file_path"
 }
 
 # Function to get model output path (direct subdirectory without HF URL structure)
@@ -400,6 +400,7 @@ download_model_hf() {
     
     local parsed_info
     local repo_id
+    local file_path
     local filename
     local output_dir
     local download_cmd
@@ -413,19 +414,22 @@ download_model_hf() {
     # Parse the HuggingFace URL
     parsed_info=$(parse_hf_url "$hf_url")
     repo_id=$(echo "$parsed_info" | cut -d':' -f1)
-    filename=$(echo "$parsed_info" | cut -d':' -f2)
+    file_path=$(echo "$parsed_info" | cut -d':' -f2)
+    
+    # Extract just the filename for local storage (strip parent directories)
+    filename=$(echo "$file_path" | sed -n 's|.*/\([^/]*\)$|\1|p')
     
     # Validate parsed info
-    if [ -z "$repo_id" ] || [ -z "$filename" ]; then
+    if [ -z "$repo_id" ] || [ -z "$file_path" ]; then
         log_error "Failed to parse HuggingFace URL: $hf_url"
-        log_error "Parsed - repo_id: '$repo_id', filename: '$filename'"
+        log_error "Parsed - repo_id: '$repo_id', file_path: '$file_path'"
         return 1
     fi
     
     # Get output directory (direct subdirectory without HF URL structure)
     output_dir=$(get_model_output_path "$model_type")
     
-    log_info "Downloading $model_type model: $filename from $repo_id to $output_dir/"
+    log_info "Downloading $model_type model: $file_path from $repo_id to $output_dir/"
     
     # Create directory if it doesn't exist
     mkdir -p "$output_dir"
@@ -447,8 +451,8 @@ download_model_hf() {
     # Add common parameters
     download_cmd="$download_cmd --local-dir \"$output_dir\""
     
-    # Download the file directly
-    download_cmd="$download_cmd \"$filename\""
+    # Download the file using the full path from the URL
+    download_cmd="$download_cmd \"$file_path\""
     if eval "$download_cmd"; then
         log_success "Downloaded $filename"
     else
