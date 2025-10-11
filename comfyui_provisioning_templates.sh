@@ -478,22 +478,29 @@ download_model_hf() {
         download_cmd="$download_cmd --token \"$HF_TOKEN\""
     fi
     
-    # Download directly to output directory (simpler approach)
-    download_cmd="$download_cmd --local-dir \"$output_dir\""
+    # Create a temporary directory for download
+    local temp_dir=$(mktemp -d)
+    
+    # Download to temp directory first
+    download_cmd="$download_cmd --local-dir \"$temp_dir\""
     
     # Download the file using the full path from the URL
     download_cmd="$download_cmd \"$file_path\""
     if eval "$download_cmd"; then
-        # The Hugging Face CLI automatically moves the file to the final location
-        # Check if file exists in the expected location (handles subdirectory structure)
-        if [ -f "$output_dir/$file_path" ]; then
-            log_success "Downloaded $filename"
-        elif [ -f "$output_dir/$filename" ]; then
-            # Fallback: check if file exists directly in output directory
+        # The Hugging Face CLI downloads to $temp_dir/$file_path
+        local downloaded_file_path="$temp_dir/$file_path"
+        
+        if [ -f "$downloaded_file_path" ]; then
+            # Move just the file (not the directory structure) to the output directory
+            mv "$downloaded_file_path" "$output_dir/$filename"
+            # Clean up temp directory
+            rm -rf "$temp_dir"
             log_success "Downloaded $filename"
         else
+            # Clean up temp directory on failure
+            rm -rf "$temp_dir"
             log_error "Downloaded file not found: $filename"
-            log_error "Expected in: $output_dir/ (with path: $file_path)"
+            log_error "Expected at: $downloaded_file_path"
             return 1
         fi
     else
