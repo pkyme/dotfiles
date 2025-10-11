@@ -381,10 +381,13 @@ parse_hf_url() {
     # Extract repo_id (format: username/repo-name)
     repo_id=$(echo "$url" | sed -n 's|.*huggingface\.co/\([^/]*/[^/]*\)/.*|\1|p')
     
-    # Extract the full file path within the repository (everything after resolve/main/)
+    # Extract revision (commit hash or "main") from the resolve/ part
+    revision=$(echo "$url" | sed -n 's|.*huggingface\.co/[^/]*/[^/]*/resolve/\([^/]*\)/.*|\1|p')
+    
+    # Extract the full file path within the repository (everything after resolve/<revision>/)
     file_path=$(echo "$url" | sed -n 's|.*huggingface\.co/[^/]*/[^/]*/resolve/[^/]*/\(.*\)|\1|p')
     
-    echo "$repo_id:$file_path"
+    echo "$repo_id:$file_path:$revision"
 }
 
 # Function to get model output path (direct subdirectory without HF URL structure)
@@ -417,21 +420,22 @@ download_model_hf() {
     parsed_info=$(parse_hf_url "$hf_url")
     repo_id=$(echo "$parsed_info" | cut -d':' -f1)
     file_path=$(echo "$parsed_info" | cut -d':' -f2)
+    revision=$(echo "$parsed_info" | cut -d':' -f3)
     
     # Extract just the filename for local storage (strip parent directories)
     filename=$(echo "$file_path" | sed -n 's|.*/\([^/]*\)$|\1|p')
     
     # Validate parsed info
-    if [ -z "$repo_id" ] || [ -z "$file_path" ]; then
+    if [ -z "$repo_id" ] || [ -z "$file_path" ] || [ -z "$revision" ]; then
         log_error "Failed to parse HuggingFace URL: $hf_url"
-        log_error "Parsed - repo_id: '$repo_id', file_path: '$file_path'"
+        log_error "Parsed - repo_id: '$repo_id', file_path: '$file_path', revision: '$revision'"
         return 1
     fi
     
     # Get output directory (direct subdirectory without HF URL structure)
     output_dir=$(get_model_output_path "$model_type")
     
-    log_info "Downloading $model_type model: $file_path from $repo_id to $output_dir/"
+    log_info "Downloading $model_type model: $file_path from $repo_id (revision: $revision) to $output_dir/"
     
     # Create directory if it doesn't exist
     mkdir -p "$output_dir"
@@ -448,6 +452,9 @@ download_model_hf() {
     # Build the base download command
     download_cmd="hf download \"$repo_id\""
     
+    # Add revision parameter (commit hash or "main")
+    download_cmd="$download_cmd --revision \"$revision\""
+    
     # Add token if available
     if [ -n "${HF_TOKEN:-}" ]; then
         download_cmd="$download_cmd --token \"$HF_TOKEN\""
@@ -459,11 +466,22 @@ download_model_hf() {
     # Download the file using the full path from the URL
     download_cmd="$download_cmd \"$file_path\""
     if eval "$download_cmd"; then
-        # Move just the file (not the directory structure) to the output directory
-        mv "$temp_dir/$file_path" "$output_dir/$filename"
-        # Clean up temp directory
-        rm -rf "$temp_dir"
-        log_success "Downloaded $filename"
+        # Find the actual downloaded file path (handles commit hash directory structure)
+        local downloaded_file_path
+        downloaded_file_path=$(find "$temp_dir" -name "$filename" -type f)
+        
+        if [ -n "$downloaded_file_path" ] && [ -f "$downloaded_file_path" ]; then
+            # Move just the file (not the directory structure) to the output directory
+            mv "$downloaded_file_path" "$output_dir/$filename"
+            # Clean up temp directory
+            rm -rf "$temp_dir"
+            log_success "Downloaded $filename"
+        else
+            # Clean up temp directory on failure
+            rm -rf "$temp_dir"
+            log_error "Downloaded file not found: $filename"
+            return 1
+        fi
     else
         # Clean up temp directory on failure
         rm -rf "$temp_dir"
