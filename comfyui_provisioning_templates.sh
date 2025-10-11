@@ -446,9 +446,6 @@ download_model_hf() {
         return 0
     fi
     
-    # Create a temporary directory for download
-    local temp_dir=$(mktemp -d)
-    
     # Build the base download command
     download_cmd="hf download \"$repo_id\""
     
@@ -460,31 +457,37 @@ download_model_hf() {
         download_cmd="$download_cmd --token \"$HF_TOKEN\""
     fi
     
-    # Download to temp directory to preserve repo structure temporarily
-    download_cmd="$download_cmd --local-dir \"$temp_dir\""
+    # Download directly to output directory (simpler approach)
+    download_cmd="$download_cmd --local-dir \"$output_dir\""
     
     # Download the file using the full path from the URL
     download_cmd="$download_cmd \"$file_path\""
     if eval "$download_cmd"; then
-        # Find the actual downloaded file path (handles commit hash directory structure)
-        local downloaded_file_path
-        downloaded_file_path=$(find "$temp_dir" -name "$filename" -type f)
-        
-        if [ -n "$downloaded_file_path" ] && [ -f "$downloaded_file_path" ]; then
-            # Move just the file (not the directory structure) to the output directory
-            mv "$downloaded_file_path" "$output_dir/$filename"
-            # Clean up temp directory
-            rm -rf "$temp_dir"
+        # Check if file was downloaded successfully
+        if [ -f "$output_dir/$filename" ]; then
             log_success "Downloaded $filename"
         else
-            # Clean up temp directory on failure
-            rm -rf "$temp_dir"
-            log_error "Downloaded file not found: $filename"
-            return 1
+            # Debug: List contents of output directory to see what was downloaded
+            log_info "Output directory contents after download:"
+            find "$output_dir" -name "*$filename*" -type f | while read file; do
+                log_info "  Found: $file"
+            done
+            
+            # Try to find the file with a different name pattern
+            local actual_file
+            actual_file=$(find "$output_dir" -name "*${filename%.*}*" -type f | head -1)
+            
+            if [ -n "$actual_file" ] && [ -f "$actual_file" ]; then
+                # Rename to expected filename
+                mv "$actual_file" "$output_dir/$filename"
+                log_success "Downloaded and renamed to $filename"
+            else
+                log_error "Downloaded file not found: $filename"
+                log_error "Expected in: $output_dir/"
+                return 1
+            fi
         fi
     else
-        # Clean up temp directory on failure
-        rm -rf "$temp_dir"
         log_error "Failed to download $filename"
         return 1
     fi
