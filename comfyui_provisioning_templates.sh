@@ -457,8 +457,12 @@ download_model_hf() {
     # Create directory if it doesn't exist
     mkdir -p "$output_dir"
     
-    # Check if file already exists
-    if [ -f "$output_dir/$filename" ]; then
+    # Check if file already exists (handles both direct and subdirectory paths)
+    if [ -f "$output_dir/$file_path" ]; then
+        log_warning "File $filename already exists (with path: $file_path), skipping download"
+        return 0
+    elif [ -f "$output_dir/$filename" ]; then
+        # Fallback: check if file exists directly in output directory
         log_warning "File $filename already exists, skipping download"
         return 0
     fi
@@ -481,12 +485,15 @@ download_model_hf() {
     download_cmd="$download_cmd \"$file_path\""
     if eval "$download_cmd"; then
         # The Hugging Face CLI automatically moves the file to the final location
-        # Just verify the file exists in the expected location
-        if [ -f "$output_dir/$filename" ]; then
+        # Check if file exists in the expected location (handles subdirectory structure)
+        if [ -f "$output_dir/$file_path" ]; then
+            log_success "Downloaded $filename"
+        elif [ -f "$output_dir/$filename" ]; then
+            # Fallback: check if file exists directly in output directory
             log_success "Downloaded $filename"
         else
             log_error "Downloaded file not found: $filename"
-            log_error "Expected in: $output_dir/"
+            log_error "Expected in: $output_dir/ (with path: $file_path)"
             return 1
         fi
     else
