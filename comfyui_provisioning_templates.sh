@@ -382,7 +382,7 @@ parse_hf_url() {
     repo_id=$(echo "$url" | sed -n 's|.*huggingface\.co/\([^/]*/[^/]*\)/.*|\1|p')
     
     # Extract the full file path within the repository (everything after resolve/main/)
-    file_path=$(echo "$url" | sed -n 's|.*huggingface\.co/[^/]*/[^/]*/resolve/main/\(.*\)|\1|p')
+    file_path=$(echo "$url" | sed -n 's|.*huggingface\.co/[^/]*/[^/]*/resolve/[^/]*/\(.*\)|\1|p')
     
     echo "$repo_id:$file_path"
 }
