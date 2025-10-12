@@ -94,6 +94,121 @@ define_models_GETTING_STARTED() {
     )
 }
 
+define_models_FLUX_CHROMA1_RADIANCE() {
+    MODELS=(
+        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors:text_encoders"
+        "https://huggingface.co/lodestones/Chroma1-Radiance/resolve/main/Chroma1-Radiance-v0.1.safetensors:diffusion_models"
+    )
+}
+
+define_models_FLUX_CHROMA1_HD() {
+    MODELS=(
+        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn_scaled.safetensors:text_encoders"
+        "https://huggingface.co/lodestones/Chroma1-HD/resolve/main/Chroma1-HD.safetensors:diffusion_models"
+        "https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors:vae"
+    )
+}
+
+define_models_FLUX_KONTEXT_DEV() {
+    MODELS=(
+        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn_scaled.safetensors:text_encoders"
+        "https://huggingface.co/Comfy-Org/flux1-kontext-dev_ComfyUI/resolve/main/split_files/diffusion_models/flux1-dev-kontext_fp8_scaled.safetensors:diffusion_models"
+        "https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors:vae"
+    )    
+}
+
+define_models_FLUX_DEV_ONEREWARD() {
+    MODELS=(
+        "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors:text_encoders"
+        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors:text_encoders"
+        "https://huggingface.co/Comfy-Org/OneReward_repackaged/resolve/main/split_files/diffusion_models/flux.1-fill-dev-OneReward-transformer_fp8.safetensors:diffusion_models"
+        "https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors:vae"
+        "https://huggingface.co/lrzjason/ObjectRemovalFluxFill/resolve/main/removal_timestep_alpha-2-1740.safetensors:loras"
+    )    
+}
+
+define_models_FLUX_DEV_FP8() {
+    MODELS=(
+        "https://huggingface.co/Comfy-Org/flux1-dev/resolve/main/flux1-dev-fp8.safetensors:checkpoints"
+    )    
+}
+
+define_models_FLUX_DEV_USO() {
+    MODELS=(
+        "https://huggingface.co/Comfy-Org/flux1-dev/resolve/main/flux1-dev-fp8.safetensors:checkpoints"
+        "https://huggingface.co/Comfy-Org/USO_1.0_Repackaged/resolve/main/split_files/loras/uso-flux1-dit-lora-v1.safetensors:loras"
+        "https://huggingface.co/Comfy-Org/USO_1.0_Repackaged/resolve/main/split_files/model_patches/uso-flux1-projector-v1.safetensors:model_patches"
+        "https://huggingface.co/Comfy-Org/sigclip_vision_384/resolve/main/sigclip_vision_patch14_384.safetensors:clip_vision"
+    )    
+}
+
+define_models_FLUX_SCHNELL_FP8() {
+    MODELS=(
+        "https://huggingface.co/Comfy-Org/flux1-schnell/resolve/main/flux1-schnell-fp8.safetensors:checkpoints"
+    )    
+}
+
+define_models_FLUX_KREA_DEV() {
+    MODELS=(
+        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors:text_encoders"
+        "https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors:vae"
+        "https://huggingface.co/Comfy-Org/FLUX.1-Krea-dev_ComfyUI/resolve/main/split_files/diffusion_models/flux1-krea-dev_fp8_scaled.safetensors:diffusion_models"
+    )    
+}
+
+define_models_FLUX_DEV_FULL() {
+    MODELS=(
+        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors:text_encoders"
+        "https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors:vae"
+        "https://huggingface.co/Comfy-Org/flux1-dev/resolve/main/flux1-dev.safetensors:diffusion_models"
+    )    
+}
+
+define_models_FLUX_SCHNELL_FULL() {
+    MODELS=(
+        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors:text_encoders"
+        "https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors:vae"
+        "https://huggingface.co/Comfy-Org/flux1-schnell/resolve/main/flux1-schnell.safetensors:diffusion_models"
+    )    
+}
+
+define_models_FLUX_FILL_DEV() {
+    MODELS=(
+        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors:text_encoders"
+        "https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/main/ae.safetensors:vae"
+        "https://huggingface.co/black-forest-labs/FLUX.1-Fill-dev/blob/main/flux1-fill-dev.safetensors:diffusion_models"
+    )    
+}
+
+define_models_FLUX_REDUX() {
+    MODELS=(
+        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors:text_encoders"
+        "https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors:vae"
+        "https://huggingface.co/Comfy-Org/flux1-dev/resolve/main/flux1-dev.safetensors:diffusion_models"
+        "https://huggingface.co/Comfy-Org/Flux1-Redux-Dev/resolve/main/flux1-redux-dev.safetensors:style_models"
+        "https://huggingface.co/Comfy-Org/sigclip_vision_384/resolve/main/sigclip_vision_patch14_384.safetensors:clip_vision"
+    )    
+}
+
+define_models_FLUX_DEPTH_LORA() {
+    MODELS=(
+        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors:text_encoders"
+        "https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/main/ae.safetensors:vae"
+        "https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/flux1-dev.safetensors:diffusion_models"
+        "https://huggingface.co/black-forest-labs/FLUX.1-Depth-dev-lora/resolve/main/flux1-depth-dev-lora.safetensors:loras"
+    )        
+}
+
+define_models_FLUX_CANNY() {
+    MODELS=(
+        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors:text_encoders"
+        "https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/main/ae.safetensors:vae"
+        "https://huggingface.co/black-forest-labs/FLUX.1-Canny-dev/resolve/main/flux1-canny-dev.safetensors:diffusion_models"
+    )    
+}
+
+
+
 define_models_UPSCALERS() {
     MODELS=(
         "https://huggingface.co/LS110824/upscale/resolve/main/4x-ClearRealityV1.pth:upscale_models"
@@ -600,6 +715,7 @@ install_custom_nodes() {
             "https://github.com/kijai/ComfyUI-segment-anything-2.git"
             "https://github.com/kijai/ComfyUI-WanVideoWrapper.git"
             "https://github.com/Fannovel16/ComfyUI-Frame-Interpolation.git"
+            "https://github.com/pkyme/ComfyUI-Download-Missing.git"
         )
         
         # Start with default URLs
