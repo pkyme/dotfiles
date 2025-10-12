@@ -50,22 +50,12 @@ INSTALL_SAGE_ATTENTION="${INSTALL_SAGE_ATTENTION:-false}"
 # Define all available model groups
 MODEL_GROUPS=(
     "GETTING_STARTED:false"
-    "UPSCALERS:false"
-    "SDXL:false"          # SDXL models - disabled by default
-    "FLUX:false"          # Flux models - disabled by default
-    "SD3:false"           # SD3 models - disabled by default
-    "CONTROLNET_EXTRAS:false"  # Extra ControlNet models - disabled by default
-    "IPADAPTER:false"     # IP-Adapter models - disabled by default
-    "WAN21T2V14B:false"      # Wan 2.1 Text to Video 14B
-    "WAN22T2V14B:false"      # Wan 2.2 Text to Video 14B
-    "WAN21I2V14B720P:false"  # Wan 2.1 Image to Video 14B 720p
-    "WAN21I2V14B:false"
-    "WAN22I2V14B:false"
-    "WAN22I2V14B_fp8:false"
-    "WAN22ANIMATE14B:false"
-    "WAN22ANIMATE14B_fp8:false"
-    "VIEWCRAFTER:false"
-    "UNI3C:false"
+    "FLUX:false" 
+    "QWEN_IMAGE:false"
+    "QWEN_IMAGE_EDIT_2509:false"
+    "WAN22_T2V:false"
+    "WAN22_I2V:false"
+    "WAN22_ANIMATE:false"
 )
 
 # Model definitions for each group
@@ -90,256 +80,73 @@ define_models_GETTING_STARTED() {
         "https://huggingface.co/GreenGrape/231209/resolve/main/majicmixRealistic_v7.safetensors:checkpoints"
         "https://huggingface.co/emmajoanne/models-moved/resolve/main/japaneseStyleRealistic_v20.safetensors:checkpoints"
         "https://huggingface.co/gjjc/dwm/resolve/e5dec7faab80e451d116b82d53d28463269c33e4/controlnetT2IAdapter_t2iAdapterDepth.safetensors:controlnet"
-
-    )
-}
-
-define_models_FLUX_CHROMA1_RADIANCE() {
-    MODELS=(
-        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors:text_encoders"
-        "https://huggingface.co/lodestones/Chroma1-Radiance/resolve/main/Chroma1-Radiance-v0.1.safetensors:diffusion_models"
-    )
-}
-
-define_models_FLUX_CHROMA1_HD() {
-    MODELS=(
-        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn_scaled.safetensors:text_encoders"
-        "https://huggingface.co/lodestones/Chroma1-HD/resolve/main/Chroma1-HD.safetensors:diffusion_models"
-        "https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors:vae"
-    )
-}
-
-define_models_FLUX_KONTEXT_DEV() {
-    MODELS=(
-        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn_scaled.safetensors:text_encoders"
-        "https://huggingface.co/Comfy-Org/flux1-kontext-dev_ComfyUI/resolve/main/split_files/diffusion_models/flux1-dev-kontext_fp8_scaled.safetensors:diffusion_models"
-        "https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors:vae"
-    )    
-}
-
-define_models_FLUX_DEV_ONEREWARD() {
-    MODELS=(
-        "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors:text_encoders"
-        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors:text_encoders"
-        "https://huggingface.co/Comfy-Org/OneReward_repackaged/resolve/main/split_files/diffusion_models/flux.1-fill-dev-OneReward-transformer_fp8.safetensors:diffusion_models"
-        "https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors:vae"
-        "https://huggingface.co/lrzjason/ObjectRemovalFluxFill/resolve/main/removal_timestep_alpha-2-1740.safetensors:loras"
-    )    
-}
-
-define_models_FLUX_DEV_FP8() {
-    MODELS=(
-        "https://huggingface.co/Comfy-Org/flux1-dev/resolve/main/flux1-dev-fp8.safetensors:checkpoints"
-    )    
-}
-
-define_models_FLUX_DEV_USO() {
-    MODELS=(
-        "https://huggingface.co/Comfy-Org/flux1-dev/resolve/main/flux1-dev-fp8.safetensors:checkpoints"
-        "https://huggingface.co/Comfy-Org/USO_1.0_Repackaged/resolve/main/split_files/loras/uso-flux1-dit-lora-v1.safetensors:loras"
-        "https://huggingface.co/Comfy-Org/USO_1.0_Repackaged/resolve/main/split_files/model_patches/uso-flux1-projector-v1.safetensors:model_patches"
-        "https://huggingface.co/Comfy-Org/sigclip_vision_384/resolve/main/sigclip_vision_patch14_384.safetensors:clip_vision"
-    )    
-}
-
-define_models_FLUX_SCHNELL_FP8() {
-    MODELS=(
-        "https://huggingface.co/Comfy-Org/flux1-schnell/resolve/main/flux1-schnell-fp8.safetensors:checkpoints"
-    )    
-}
-
-define_models_FLUX_KREA_DEV() {
-    MODELS=(
-        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors:text_encoders"
-        "https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors:vae"
-        "https://huggingface.co/Comfy-Org/FLUX.1-Krea-dev_ComfyUI/resolve/main/split_files/diffusion_models/flux1-krea-dev_fp8_scaled.safetensors:diffusion_models"
-    )    
-}
-
-define_models_FLUX_DEV_FULL() {
-    MODELS=(
-        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors:text_encoders"
-        "https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors:vae"
-        "https://huggingface.co/Comfy-Org/flux1-dev/resolve/main/flux1-dev.safetensors:diffusion_models"
-    )    
-}
-
-define_models_FLUX_SCHNELL_FULL() {
-    MODELS=(
-        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors:text_encoders"
-        "https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors:vae"
-        "https://huggingface.co/Comfy-Org/flux1-schnell/resolve/main/flux1-schnell.safetensors:diffusion_models"
-    )    
-}
-
-define_models_FLUX_FILL_DEV() {
-    MODELS=(
-        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors:text_encoders"
-        "https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/main/ae.safetensors:vae"
-        "https://huggingface.co/black-forest-labs/FLUX.1-Fill-dev/blob/main/flux1-fill-dev.safetensors:diffusion_models"
-    )    
-}
-
-define_models_FLUX_REDUX() {
-    MODELS=(
-        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors:text_encoders"
-        "https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors:vae"
-        "https://huggingface.co/Comfy-Org/flux1-dev/resolve/main/flux1-dev.safetensors:diffusion_models"
-        "https://huggingface.co/Comfy-Org/Flux1-Redux-Dev/resolve/main/flux1-redux-dev.safetensors:style_models"
-        "https://huggingface.co/Comfy-Org/sigclip_vision_384/resolve/main/sigclip_vision_patch14_384.safetensors:clip_vision"
-    )    
-}
-
-define_models_FLUX_DEPTH_LORA() {
-    MODELS=(
-        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors:text_encoders"
-        "https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/main/ae.safetensors:vae"
-        "https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/flux1-dev.safetensors:diffusion_models"
-        "https://huggingface.co/black-forest-labs/FLUX.1-Depth-dev-lora/resolve/main/flux1-depth-dev-lora.safetensors:loras"
-    )        
-}
-
-define_models_FLUX_CANNY() {
-    MODELS=(
-        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors:text_encoders"
-        "https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/main/ae.safetensors:vae"
-        "https://huggingface.co/black-forest-labs/FLUX.1-Canny-dev/resolve/main/flux1-canny-dev.safetensors:diffusion_models"
-    )    
-}
-
-
-
-define_models_UPSCALERS() {
-    MODELS=(
-        "https://huggingface.co/LS110824/upscale/resolve/main/4x-ClearRealityV1.pth:upscale_models"
-        "https://huggingface.co/LS110824/upscale/resolve/main/4x-ClearRealityV1_Soft.pth:upscale_models"
-        "https://huggingface.co/LS110824/upscale/resolve/main/4x-UltraSharp.pth:upscale_models"
-        "https://huggingface.co/LS110824/upscale/resolve/main/RealESRGAN_x4plus.pth:upscale_models"
-        "https://huggingface.co/LS110824/upscale/resolve/main/4x_foolhardy_Remacri.pth:upscale_models"
-        "https://huggingface.co/LS110824/upscale/resolve/main/4xNomos2_hq_dat2.safetensors:upscale_models"
-        "https://huggingface.co/LS110824/upscale/resolve/main/4xNomos8kSC.pth:upscale_models"
-        "https://huggingface.co/LS110824/upscale/resolve/main/4xLSDIR.pth:upscale_models"
-        "https://huggingface.co/LS110824/upscale/resolve/main/4x_NMKD-Siax_200k.pth:upscale_models"
-    )
-}
-
-define_models_SDXL() {
-    MODELS=(
-        "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors:checkpoints"
-        "https://huggingface.co/xinsir/controlnet-union-sdxl-1.0/resolve/main/diffusion_pytorch_model_promax.safetensors:controlnet"
     )
 }
 
 define_models_FLUX() {
     MODELS=(
-        "https://huggingface.co/city96/FLUX.1-dev-gguf/resolve/main/flux1-dev-Q8_0.gguf:diffusion_models"
-        "https://huggingface.co/Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro/resolve/main/diffusion_pytorch_model.safetensors:controlnet"
-        "https://huggingface.co/StableDiffusionVN/Flux/resolve/main/Vae/flux_vae.safetensors:vae"
-        "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q8_0.gguf:text_encoders"
-        "https://huggingface.co/QuantStack/FLUX.1-Kontext-dev-GGUF/resolve/main/flux1-kontext-dev-Q8_0.gguf:unet"
-    )
+        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn_scaled.safetensors:text_encoders"
+        "https://huggingface.co/Comfy-Org/flux1-kontext-dev_ComfyUI/resolve/main/split_files/diffusion_models/flux1-dev-kontext_fp8_scaled.safetensors:diffusion_models"
+        "https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors:vae"
+        "https://huggingface.co/Kijai/flux-fp8/resolve/main/flux1-dev-fp8.safetensors:diffusion_models"
+        "https://huggingface.co/Comfy-Org/FLUX.1-Krea-dev_ComfyUI/resolve/main/split_files/diffusion_models/flux1-krea-dev_fp8_scaled.safetensors:diffusion_models"
+    )    
 }
 
-define_models_SD3() {
+define_models_QWEN_IMAGE() {
     MODELS=(
-        "https://huggingface.co/Comfy-Org/stable-diffusion-3.5-fp8/resolve/main/text_encoders/clip_l.safetensors:text_encoders"
-        # Add more SD3 models here as needed
-    )
+        "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors:text_encoders"
+        "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/diffusion_models/qwen_image_fp8_e4m3fn.safetensors:diffusion_models"
+        "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/vae/qwen_image_vae.safetensors:vae"
+        "https://huggingface.co/lightx2v/Qwen-Image-Lightning/resolve/main/Qwen-Image-Lightning-8steps-V1.0.safetensors:loras"
+        "https://huggingface.co/lightx2v/Qwen-Image-Lightning/resolve/main/Qwen-Image-Lightning-4steps-V1.0.safetensors:loras"
+        "https://huggingface.co/stabilityai/sd-vae-ft-mse-original/resolve/main/vae-ft-mse-840000-ema-pruned.safetensors:vae"
+        "https://huggingface.co/Comfy-Org/lotus/resolve/main/lotus-depth-d-v1-1.safetensors:diffusion_models"
+        "https://huggingface.co/Comfy-Org/Qwen-Image-InstantX-ControlNets/resolve/main/split_files/controlnet/Qwen-Image-InstantX-ControlNet-Inpainting.safetensors:controlnet"
+        "https://huggingface.co/Comfy-Org/Qwen-Image-DiffSynth-ControlNets/resolve/main/split_files/loras/qwen_image_union_diffsynth_lora.safetensors:loras"
+        "https://huggingface.co/Comfy-Org/Qwen-Image-DiffSynth-ControlNets/resolve/main/split_files/model_patches/qwen_image_canny_diffsynth_controlnet.safetensors:model_patches"
+    )    
 }
 
-define_models_CONTROLNET_EXTRAS() {
+define_models_QWEN_IMAGE_EDIT_2509() {
     MODELS=(
-        # Additional ControlNet models that work across architectures
-        # Add more here as needed
-    )
+        "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors:text_encoders"
+        "https://huggingface.co/Comfy-Org/Qwen-Image-Edit_ComfyUI/resolve/main/split_files/diffusion_models/qwen_image_edit_2509_fp8_e4m3fn.safetensors:diffusion_models"
+        "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/vae/qwen_image_vae.safetensors:vae"
+        "https://huggingface.co/lightx2v/Qwen-Image-Lightning/resolve/main/Qwen-Image-Edit-2509/Qwen-Image-Edit-2509-Lightning-4steps-V1.0-bf16.safetensors:loras"
+    ) 
 }
 
-define_models_IPADAPTER() {
+define_models_WAN22_T2V() {
     MODELS=(
-        # "https://huggingface.co/InstantX/FLUX.1-dev-IP-Adapter/resolve/main/ip-adapter.bin:ipadapter-flux"
-        # "https://huggingface.co/google/siglip-so400m-patch14-384/resolve/main/model.safetensors:clip_vision"
-        # "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors:ipadapter"
-        # "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/image_encoder/model.safetensors:clip_vision"
-    )
-}
-
-define_models_WAN21T2V14B() {
-    MODELS=(
-        "https://huggingface.co/city96/Wan2.1-T2V-14B-gguf/resolve/main/wan2.1-t2v-14b-Q8_0.gguf:diffusion_models"
-        "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors:vae"
         "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors:text_encoders"
+        "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/diffusion_models/wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors:diffusion_models"
+        "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/diffusion_models/wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors:diffusion_models"
+        "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors:vae"
+        "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/loras/wan2.2_t2v_lightx2v_4steps_lora_v1.1_high_noise.safetensors:loras"
+        "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/loras/wan2.2_t2v_lightx2v_4steps_lora_v1.1_low_noise.safetensors:loras"
     )
 }
 
-define_models_WAN22T2V14B() {
+define_models_WAN22_I2V() {
     MODELS=(
-        "https://huggingface.co/QuantStack/Wan2.2-T2V-A14B-GGUF/resolve/main/HighNoise/Wan2.2-T2V-A14B-HighNoise-Q8_0.gguf:diffusion_models"
-        "https://huggingface.co/QuantStack/Wan2.2-T2V-A14B-GGUF/resolve/main/LowNoise/Wan2.2-T2V-A14B-LowNoise-Q8_0.gguf:diffusion_models"
-        "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors:vae"
         "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors:text_encoders"
+        "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/diffusion_models/wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors:diffusion_models"
+        "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/diffusion_models/wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors:diffusion_models"
+        "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors:vae"
+        "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/loras/wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors:loras"
+        "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/loras/wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors:loras"
     )
 }
 
-define_models_WAN21I2V14B720P() {
+define_models_WAN22_ANIMATE() {
     MODELS=(
-        "https://huggingface.co/city96/Wan2.1-I2V-14B-720P-gguf/resolve/main/wan2.1-i2v-14b-720p-Q8_0.gguf:diffusion_models"
-        "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors:vae"
         "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors:text_encoders"
-    )
-}
-
-define_models_WAN22I2V14B() {
-    MODELS=(
-        "https://huggingface.co/bullerwins/Wan2.2-I2V-A14B-GGUF/resolve/main/wan2.2_i2v_high_noise_14B_Q8_0.gguf:diffusion_models"
-        "https://huggingface.co/bullerwins/Wan2.2-I2V-A14B-GGUF/resolve/main/wan2.2_i2v_low_noise_14B_Q8_0.gguf:diffusion_models"
-        "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors:vae"
-        "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/Lightx2v/lightx2v_I2V_14B_480p_cfg_step_distill_rank64_bf16.safetensors:loras"
-        "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors:text_encoders"
-    )
-}
-
-define_models_WAN22I2V14B_fp8() {
-    MODELS=(
-        "https://huggingface.co/Kijai/WanVideo_comfy_fp8_scaled/resolve/main/I2V/Wan2_2-I2V-A14B-HIGH_fp8_e4m3fn_scaled_KJ.safetensors:diffusion_models"
-        "https://huggingface.co/Kijai/WanVideo_comfy_fp8_scaled/resolve/main/I2V/Wan2_2-I2V-A14B-LOW_fp8_e4m3fn_scaled_KJ.safetensors:diffusion_models"
-        "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors:vae"
-        "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/Lightx2v/lightx2v_I2V_14B_480p_cfg_step_distill_rank64_bf16.safetensors:loras"
-        "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors:text_encoders"
-    )
-}
-
-define_models_WAN22ANIMATE14B() {
-    MODELS=(
-        "https://huggingface.co/Kijai/WanVideo_comfy_GGUF/resolve/main/Wan22Animate/Wan2_2_Animate_14B_Q8_0.gguf:diffusion_models"
-        "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/WanAnimate_relight_lora_fp16.safetensors:loras"
-        "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors:vae"
-        "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/Lightx2v/lightx2v_I2V_14B_480p_cfg_step_distill_rank64_bf16.safetensors:loras"
-        "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors:text_encoders"
-        "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/clip_vision/clip_vision_h.safetensors:clip_vision"
-    )
-}
-
-define_models_WAN22ANIMATE14B_fp8() {
-    MODELS=(
         "https://huggingface.co/Kijai/WanVideo_comfy_fp8_scaled/resolve/main/Wan22Animate/Wan2_2-Animate-14B_fp8_e4m3fn_scaled_KJ.safetensors:diffusion_models"
-        "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/WanAnimate_relight_lora_fp16.safetensors:loras"
-        "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors:vae"
+        "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors:vae"
         "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/Lightx2v/lightx2v_I2V_14B_480p_cfg_step_distill_rank64_bf16.safetensors:loras"
-        "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors:text_encoders"
+        "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/LoRAs/Wan22_relight/WanAnimate_relight_lora_fp16.safetensors:loras"
         "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/clip_vision/clip_vision_h.safetensors:clip_vision"
-
-    )
-}
-
-define_models_VIEWCRAFTER() {
-    MODELS=(
-        "https://huggingface.co/Drexubery/ViewCrafter_25/resolve/main/model.ckpt:viewcrafter"
-    )
-}
-
-define_models_UNI3C() {
-    MODELS=(
-        "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/Wan21_Uni3C_controlnet_fp16.safetensors:controlnet"
     )
 }
 
