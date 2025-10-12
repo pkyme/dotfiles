@@ -90,6 +90,7 @@ define_models_FLUX() {
         "https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors:vae"
         "https://huggingface.co/Kijai/flux-fp8/resolve/main/flux1-dev-fp8.safetensors:diffusion_models"
         "https://huggingface.co/Comfy-Org/FLUX.1-Krea-dev_ComfyUI/resolve/main/split_files/diffusion_models/flux1-krea-dev_fp8_scaled.safetensors:diffusion_models"
+        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors:text_encoders"
     )    
 }
 
