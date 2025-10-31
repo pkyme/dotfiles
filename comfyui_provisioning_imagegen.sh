@@ -12,6 +12,12 @@
 #   INSTALL_COMFYUI - Install and run ComfyUI core (default: true)
 #   INSTALL_CUSTOM_NODES - Install custom nodes (default: true)
 #
+# Custom Node Branch/Tag Support:
+#   Custom nodes can specify a specific branch or tag using the format:
+#   "https://github.com/user/repo.git:branch_name"
+#   "https://github.com/user/repo.git:v1.2.3"
+#   If no branch/tag is specified, the repository's default branch will be used
+#
 # Model Architecture Control Variables (set to "true" to download):
 #   DOWNLOAD_ALL - Download all models (overrides individual settings, default: false)
 #   DOWNLOAD_{GROUP_NAME} - Download specific model group (see MODEL_GROUPS below)
@@ -327,15 +333,31 @@ get_node_name_from_url() {
 install_custom_node() {
     local repo_url="$1"
     local node_name
-    
-    # Automatically extract node name from URL
-    node_name=$(get_node_name_from_url "$repo_url")
-    
+    local branch=""
+    local clean_url="$repo_url"
+
+    # Check if URL contains a branch/tag specifier (format: url:branch)
+    # The pattern matches the last colon followed by a branch name (no slashes)
+    if [[ "$repo_url" =~ ^(.+):([^/:]+)$ ]]; then
+        clean_url="${BASH_REMATCH[1]}"
+        branch="${BASH_REMATCH[2]}"
+        log_info "Detected branch/tag specifier: $branch"
+    fi
+
+    # Automatically extract node name from clean URL (without branch suffix)
+    node_name=$(get_node_name_from_url "$clean_url")
+
     log_info "Installing custom node: $node_name"
-    
+
     if [ ! -d "custom_nodes/$node_name" ]; then
-        git clone "$repo_url" "custom_nodes/$node_name"
-        
+        # Clone with branch if specified, otherwise use default branch
+        if [ -n "$branch" ]; then
+            log_info "Cloning from branch/tag: $branch"
+            git clone -b "$branch" "$clean_url" "custom_nodes/$node_name"
+        else
+            git clone "$clean_url" "custom_nodes/$node_name"
+        fi
+
         # Check if requirements.txt exists and install if found
         if [ -f "custom_nodes/$node_name/requirements.txt" ]; then
             log_info "Installing requirements for $node_name"
@@ -343,7 +365,7 @@ install_custom_node() {
         else
             log_info "No requirements.txt found for $node_name, skipping pip install"
         fi
-        
+
         log_success "Installed $node_name"
     else
         log_warning "$node_name already exists, skipping"
@@ -540,8 +562,13 @@ install_custom_nodes() {
         log_info "Installing custom nodes..."
 
         apt -y install libcairo2-dev pkg-config python3-dev
-        
-        # Define custom nodes to install (just GitHub URLs)
+
+        # Define custom nodes to install
+        # Format: "https://github.com/user/repo.git" or "https://github.com/user/repo.git:branch"
+        # Examples:
+        #   "https://github.com/user/repo.git"              # Uses default branch
+        #   "https://github.com/user/repo.git:main"         # Uses 'main' branch
+        #   "https://github.com/user/repo.git:v1.2.3"       # Uses 'v1.2.3' tag
         local custom_node_urls=(
             "https://github.com/ltdrdata/ComfyUI-Manager.git"
             "https://github.com/kijai/ComfyUI-KJNodes.git"
@@ -559,7 +586,7 @@ install_custom_nodes() {
             "https://github.com/Fannovel16/ComfyUI-Frame-Interpolation.git"
             # "https://github.com/Shakker-Labs/ComfyUI-IPAdapter-Flux.git"
             # "https://github.com/cubiq/ComfyUI_IPAdapter_plus.git"
-            "https://github.com/numz/ComfyUI-SeedVR2_VideoUpscaler.git"
+            "https://github.com/numz/ComfyUI-SeedVR2_VideoUpscaler.git:nightly"
             "https://github.com/logtd/ComfyUI-ViewCrafter.git"
             "https://github.com/vrgamegirl19/comfyui-vrgamedevgirl.git"
             "https://github.com/ClownsharkBatwing/RES4LYF.git"
