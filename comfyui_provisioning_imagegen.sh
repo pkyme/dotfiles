@@ -71,6 +71,7 @@ MODEL_GROUPS=(
     "WAN22ANIMATE14B_fp8:false"
     "VIEWCRAFTER:false"
     "UNI3C:false"
+    "FLASHVSR:flase"
 )
 
 # Model definitions for each group
@@ -208,6 +209,15 @@ define_models_VIEWCRAFTER() {
 define_models_UNI3C() {
     MODELS=(
         "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/Wan21_Uni3C_controlnet_fp16.safetensors:controlnet"
+    )
+}
+
+define_models_FLASHVSR() {
+    MODELS=(
+        "https://huggingface.co/JunhaoZhuang/FlashVSR/resolve/main/LQ_proj_in.ckpt:FlashVSR"
+        "https://huggingface.co/JunhaoZhuang/FlashVSR/resolve/main/TCDecoder.ckpt:FlashVSR"
+        "https://huggingface.co/JunhaoZhuang/FlashVSR/resolve/main/Wan2.1_VAE.pth:FlashVSR"
+        "https://huggingface.co/JunhaoZhuang/FlashVSR/resolve/main/diffusion_pytorch_model_streaming_dmd.safetensors:FlashVSR"
     )
 }
 
@@ -590,6 +600,7 @@ install_custom_nodes() {
             "https://github.com/logtd/ComfyUI-ViewCrafter.git"
             "https://github.com/vrgamegirl19/comfyui-vrgamedevgirl.git"
             "https://github.com/ClownsharkBatwing/RES4LYF.git"
+            "https://github.com/lihaoyun6/ComfyUI-FlashVSR_Ultra_Fast.git"
         )
         
         for repo_url in "${custom_node_urls[@]}"; do
