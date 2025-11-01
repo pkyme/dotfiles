@@ -601,6 +601,7 @@ install_custom_nodes() {
             "https://github.com/vrgamegirl19/comfyui-vrgamedevgirl.git"
             "https://github.com/ClownsharkBatwing/RES4LYF.git"
             "https://github.com/lihaoyun6/ComfyUI-FlashVSR_Ultra_Fast.git"
+            "https://github.com/pkyme/ComfyUI-Download-Missing.git"
         )
         
         for repo_url in "${custom_node_urls[@]}"; do
