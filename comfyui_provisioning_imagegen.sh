@@ -55,7 +55,7 @@ INSTALL_PYTORCH_NIGHTLY="${INSTALL_PYTORCH_NIGHTLY:-false}"
 
 # Define all available model groups
 MODEL_GROUPS=(
-    "UPSCALERS:true"
+    "UPSCALERS:false"
     "SDXL:false"          # SDXL models - disabled by default
     "FLUX:false"          # Flux models - disabled by default
     "SD3:false"           # SD3 models - disabled by default
