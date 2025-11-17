@@ -524,6 +524,7 @@ install_custom_nodes() {
             "https://github.com/kijai/ComfyUI-WanVideoWrapper.git"
             "https://github.com/Fannovel16/ComfyUI-Frame-Interpolation.git"
             "https://github.com/pkyme/ComfyUI-Download-Missing.git"
+            "https://github.com/spacepxl/ComfyUI-VAE-Utils.git"
         )
         
         # Start with default URLs
